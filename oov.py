@@ -148,15 +148,15 @@ def numberpron(numeric, CMUDICT):
                  '16':'SIXTEEN', '17':'SEVENTEEN', '18': 'EIGHTEEN', '19': 'NINETEEN'}
 
     if len(numeric) == 1:
-        return CMUDICT[dig_map[numeric]][0]
+        return CMUDICT[dig_map[numeric]]
 
     if len(numeric) == 2:
         if numeric[0] == '1':
-            return CMUDICT[teens_map[numeric]][0]
+            return CMUDICT[teens_map[numeric]]
         elif numeric[1] == '0':
-            return CMUDICT[tens_map[numeric[0]]][0]
+            return CMUDICT[tens_map[numeric[0]]]
         else:
-            return CMUDICT[tens_map[numeric[0]]][0] + CMUDICT[dig_map[numeric[1]]][0]
+            return CMUDICT[tens_map[numeric[0]]] + CMUDICT[dig_map[numeric[1]]]
 
     if len(numeric) == 3:
         return numberpron(numeric[0], CMUDICT) + numberpron(numeric[1:3], CMUDICT)
@@ -166,7 +166,7 @@ def numberpron(numeric, CMUDICT):
 
     pron = []
     for digit in numeric:
-        dig_pron = CMUDICT[dig_map[digit]][0]
+        dig_pron = CMUDICT[dig_map[digit]]
         pron += dig_pron
     return pron
 
@@ -199,31 +199,29 @@ def guess_pron(word, CMUDICT={}):
 
     # numbers
     if word.isnumeric():
-        return [numberpron(word, CMUDICT)]
+        return numberpron(word, CMUDICT)
 
     # try singular
     if word[-1] == 'S': # TODO: deal better with more complex plurals, orthographically and phonologically, e.g. sibilants, -ies
         sg = word[:-1]
         if sg in CMUDICT:
-            sgprons = CMUDICT[sg]
-            plprons = []
-            for pron in sgprons:
-                if isvoiceless(pron[-1]):
-                    plpron = pron + ['S']
-                else:
-                    plpron = pron + ['Z']
-                plprons.append(plpron)
-            return plprons
+            sgpron = CMUDICT[sg]
+            plpron = []
+            if isvoiceless(sgpron[-1]):
+                plpron = sgpron + ['S']
+            else:
+                plpron = sgpron + ['Z']
+            return plpron
 
     # phonotactically bad things are treated as acronyms (probably never iamb-compatible)
     if ispronounceable(word) is False:
         pron = []
         for char in word:
             try:
-                pron += CMUDICT[char][-1]
+                pron += CMUDICT[char]
             except:
-                pron += guess_pron(char)[-1]
-        return [pron]
+                pron += guess_pron(char)
+        return pron
 
     # try string-matching end of word
     # pass over cmudict, keep track of length of greatest match and words with that match
@@ -259,7 +257,7 @@ def guess_pron(word, CMUDICT={}):
     for phon in end[::-1]:
         if phon[0] in ['A', 'E', 'I', 'O', 'U']:
             if len(stress) == 0:
-                return [guess]
+                return guess
             else:
                 stressed = phon + stress[-1]
                 guess = [stressed] + guess
@@ -272,7 +270,7 @@ def guess_pron(word, CMUDICT={}):
             phon = 'UU' + str(num) # fake vowel
             guess = [phon] + guess
 
-    return [guess]
+    return guess
 
 
 if __name__ == "__main__":
