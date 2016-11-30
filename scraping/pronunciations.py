@@ -73,6 +73,7 @@ def load_pronunciations():
 def clean_pronunciations():
     """
     Cleans the pronunciations by selecting the first pronunciation out of the list of possible matches
+    Disregards entire word if there are ambiguous stress patterns.
     Ex: "REARVIEW": [["R", "IH1", "R", "V", "Y", "UW0"], ["R", "IY1", "R", "V", "Y", "UW0"]]"
         goes to
         "REARVIEW": ["R", "IH1", "R", "V", "Y", "UW0"]"
@@ -86,7 +87,16 @@ def clean_pronunciations():
         if len(pronunciations[pronunciation]) > 5:
             return pronunciations
     for pronunciation in pronunciations:
-        pronunciations[pronunciation] = pronunciations[pronunciation][0]
+        # Get the stress pattern for each pronunciation
+        stress_patterns = set()
+        for p in pronunciations[pronunciation]:
+            stress_patterns.add(''.join((x[-1] for x in p if x[-1] in '012')).replace('2', '1'))
+        # If there is a single stress pattern, use the first pronunciation (arbitrary). Otherwise
+        # the stress pattern is ambiguous so disregard it.
+        if len(stress_patterns) == 1:
+            pronunciations[pronunciation] = pronunciations[pronunciation][0]
+        else:
+            del pronunciations[pronunciation]
     # Save the updated pronunciations list to disk
     with open(util.path_to_data_directory() + "pronunciations.json", "w") as f:
         json.dump(pronunciations, f)
