@@ -2,11 +2,12 @@
 #!/usr/bin/python
 
 import re
-#import sys
+import sys
 import random
-import sqlite3
+#import sqlite3
+import oov
 
-global wordlist
+global words
 repeat = re.compile("[A-Z']*\\([0-9]+\\)")
 whitespace = re.compile("\\s+")
 
@@ -15,9 +16,9 @@ def split_line(line):
     syllables = filter(None, whitespace.split(line))
     return ' '.join(syllables)
 
-def init_wordlist():
-    global wordlist
-    wordlist = []
+def select_words():
+    global words
+    words = []
     with open('cmudict_0.7b.txt','r') as file:
         for line in file:
             line = split_line(line)
@@ -29,8 +30,8 @@ def init_wordlist():
             word = syllables[0]
             if repeat.match(word):
                 continue
-            # append word not in wordlist
-            wordlist.append(word)
+            # add word to words[] if not there
+            words.append(word)
 
 # function for stress pattern verification
 def stress_pattern(stressed, s):
@@ -38,16 +39,16 @@ def stress_pattern(stressed, s):
     for count in s:
         nums.append(int(count))        
     bad = False
-    for i in xrange(len(nums) - 1):
+    for i in range(len(nums) - 1):
         if nums[i] == nums[i + 1]:
             bad = True
             break
     return not bad
 
-def get_stress_pattern(p):
+def get_stress_pattern(pattern):
     nums = []
-    for c in p:
-        if c.isdigit():
+    for count in pattern:
+        if count.isdigit():
             nums.append(1 if int(c)>0 else 0)
     return nums
 
@@ -67,19 +68,22 @@ if __name__ == "__main__":
             matching = c.execute("select * from words where word=?",
                                  (word,)).fetchall()
             
+            # add syllables to lines
             for match in matching:
                 _, rhym, syls, strs, cmmn = match
                 
+                # skip if already has more than 10 syllables
                 if syls+numSyllables > 10:
-                    # This pronunciation is too long. Skip.
+                    
                     continue
 
-                # Verify stress patterns
-                if not stress_pattern(lastSyllableStressed,strs):
+                # verify stress patterns
+                if not stress_pattern(lastSyllableStressed, strs):
                     continue
 
+                # fit rhymes of the last word
                 if syls+numSyllables == 10:
-                    # We get the last word in this! Deal with rhymes
+                    
                     try:
                         if rhym != rhymes[currentRhyme]:
                             continue
@@ -90,5 +94,6 @@ if __name__ == "__main__":
                 lastSyllableStressed = strs[-1] == '1'
                 numSyllables += syls
                 break
-
+       
+        # print line              
         print(line)
