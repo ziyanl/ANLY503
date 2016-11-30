@@ -2,6 +2,7 @@ from collections import deque, defaultdict, Counter
 from random import randrange
 from nltk import word_tokenize
 
+DEFAULT_N = 2
 
 class Ngramer(object):
     """
@@ -11,12 +12,13 @@ class Ngramer(object):
     START_TOKEN = '<s>'
     END_TOKEN = '</s>'
 
-    def __init__(self, n=2):
+    def __init__(self, n=DEFAULT_N):
         """
         Constructs an Ngramer with the given order n.
         """
         self._n = n
-        self._ngrams = defaultdict(Sampler)
+        self._ngrams = Counter()
+        self._samplers = defaultdict(Sampler)
 
     @property
     def n(self):
@@ -31,28 +33,47 @@ class Ngramer(object):
         Prepends and appends START_TOKEN and END_TOKEN as needed.
         """
         # initialize bounded deque with all <s> tokens
-        q = deque([Ngramer.START_TOKEN] * (self._n - 1), maxlen=self._n - 1)
+        q = deque([Ngramer.START_TOKEN] * self._n, maxlen=self._n)
 
         # build from the tokens
         for token in tokens:
-            self._ngrams[tuple(q)].inc(token)
             q.append(token)
+            self._ngrams[tuple(q)] += 1
+            r = list(q)
+            for i in range(self._n):
+                partial = tuple(r[:i] + [...] + r[i+1:])
+                self._samplers[partial].inc(r[i])
 
         # terminate sequence with </s> token
-        self._ngrams[tuple(q)].inc(Ngramer.END_TOKEN)
+        q.append(Ngramer.END_TOKEN)
+        self._ngrams[tuple(q)] += 1
+        r = list(q)
+        for i in range(self._n):
+            partial = tuple(r[:i] + [...] + r[i+1:])
+            self._samplers[partial].inc(r[i])
 
-    def sample(self, prefix):
+    def sample(self, pattern):
         """
-        Returns a weighted random value given the provided prefix.
+        Returns a weighted random value given the provided pattern.
+        An ellipsis is used to represent the value to sample, e.g. ['hello', ...] or
+        ['these', 'are', ..., 'the', 'droids']. If a pattern is too long,
+        for the n value, initial values are ignored. If no ellipsis is present, it
+        is assumed to end in an ellipsis. If it is too short, start tokens are assumed.
 
-        E.g. ngramer.sample(['not', 'the']) == 'droids'
+        E.g. ngramer.sample(['not', 'the', ...]) == 'droids'
         """
-        # Take only the last n-1 tokens, and pad with START_TOKEN if needed
-        prefix = prefix[-self._n+1:]
-        while len(prefix) < self._n - 1:
-            prefix.insert(0, Ngramer.START_TOKEN)
+        # Append ... if not included in pattern
+        if Ellipsis not in pattern:
+            pattern = pattern + [...]
 
-        return self._ngrams[tuple(prefix)].sample()
+        # Take only the last n tokens
+        pattern = pattern[-self._n:]
+
+        # Pad with <s> if not long enough
+        pattern = [Ngramer.START_TOKEN] * (self._n - len(pattern)) + pattern
+        
+        # Sample the distribution
+        return self._samplers[tuple(pattern)].sample()
 
     def write(self, output):
         """
@@ -62,12 +83,10 @@ class Ngramer(object):
         with open('starwars.ngram', 'w') as f:
             n.write(f)
         """
-        for prefix, sampler in self._ngrams.items():
-            prefix = ' '.join(prefix)
-            for word, count in sampler._weights:
-                output.write('{} {} {}\n'.format(prefix, word, count))
+        for ngram, count in self._ngrams.items():
+            output.write('{} {}\n'.format(' '.join(ngram), count))
 
-    def read(input):
+    def read(input, n=DEFAULT_N):
         """
         Reads a build ngram file from input stream; used in conjunction with write()
         
@@ -75,16 +94,19 @@ class Ngramer(object):
         with open('starwars.ngram', 'r') as f:
             n = Ngramer.read(f)
         """
-        result = Ngramer()
+        result = Ngramer(n)
         for line in input:
             line = line.split(' ')
-            prefix, word, count = tuple(line[:-2]), line[-2], int(line[-1])
-            result._ngrams[prefix]._weights[word] = count
-            result._ngrams[prefix]._count += count
+            ngram, count = tuple(line[:-1]), int(line[-1])
+            result._ngrams[ngram] = count
+            r = list(ngram)
+            for i in range(result._n):
+                partial = tuple(r[:i] + [...] + r[i+1:])
+                result._samplers[partial].set(ngram[i], count)
         return result
             
 
-    def from_text(lines, n=2, tokenize=word_tokenize):
+    def from_text(lines, n=DEFAULT_N, tokenize=word_tokenize):
         """
         Builds an Ngramer based on an iterable list of strings (lines).
         Tokenizes each string based on the tokenize parameter (optional).
@@ -110,12 +132,19 @@ class Sampler(object):
         self._count = 0
         self._weights = Counter()
 
-    def inc(self, value):
+    def inc(self, token):
         """
-        Increments the given value, giving it more weight when random sampling
+        Increments the given token, giving it more weight when random sampling
         """
         self._count += 1
-        self._weights[value] += 1
+        self._weights[token] += 1
+
+    def set(self, token, count):
+        """
+        Sets the given token count
+        """
+        self._count += count - self._weights[token]
+        self._weights[token] = count
 
     def sample(self):
         """

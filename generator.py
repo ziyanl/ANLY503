@@ -101,7 +101,8 @@ def load_ngrams(subreddit):
         except FileNotFoundError:
             raise ValueError('{} not loaded, try another or run subreddit_scrape'.format(subreddit))
         else:
-            ngramer.write(ngram_path)
+            with open(ngram_path, 'w') as f:
+                ngramer.write(f)
             return ngramer
 
 if __name__ == "__main__":
