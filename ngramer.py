@@ -47,8 +47,42 @@ class Ngramer(object):
 
         E.g. ngramer.sample(['not', 'the']) == 'droids'
         """
-        assert len(prefix) == self._n - 1
+        # Take only the last n-1 tokens, and pad with START_TOKEN if needed
+        prefix = prefix[-self._n+1:]
+        while len(prefix) < self._n - 1:
+            prefix.insert(0, Ngramer.START_TOKEN)
+
         return self._ngrams[tuple(prefix)].sample()
+
+    def write(self, output):
+        """
+        Writes ngram model to output stream; used in conjunction with read()
+        
+        E.g.:
+        with open('starwars.ngram', 'w') as f:
+            n.write(f)
+        """
+        for prefix, sampler in self._ngrams.items():
+            prefix = ' '.join(prefix)
+            for word, count in sampler._weights:
+                output.write('{} {} {}\n'.format(prefix, word, count))
+
+    def read(input):
+        """
+        Reads a build ngram file from input stream; used in conjunction with write()
+        
+        E.g.:
+        with open('starwars.ngram', 'r') as f:
+            n = Ngramer.read(f)
+        """
+        result = Ngramer()
+        for line in input:
+            line = line.split(' ')
+            prefix, word, count = tuple(line[:-2]), line[-2], int(line[-1])
+            result._ngrams[prefix]._weights[word] = count
+            result._ngrams[prefix]._count += count
+        return result
+            
 
     def from_text(lines, n=2, tokenize=word_tokenize):
         """

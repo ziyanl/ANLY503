@@ -8,6 +8,9 @@ import sqlite3
 import oov
 import json
 import scraping.pronunciations as pron
+import utilities as util
+from ngramer import Ngramer
+from text_cleaner import TextCleaner
 
 # import pandas
 
@@ -69,7 +72,7 @@ def create_db():
     cur.execute('''CREATE TABLE starwars-comments (TEXT)''')
 
     # read starwars-comments text file
-    file = open("starwars-comments.txt", "r")
+    file = open(util.path_to_data_directory() + "starwars-comments.txt", "r")
     starwars = file.read()
 
     # write text data into database
@@ -84,6 +87,22 @@ def create_db():
     # close connection
     # conn.close()
 
+def load_ngrams(subreddit):
+    import os
+    ngram_path = util.path_to_data_directory() + "{}.ngram".format(subreddit)
+    if os.path.exists(ngram_path):
+        with open(ngram_path, 'r') as f:
+            return Ngramer.read(f)
+    else:
+        tc = TextCleaner()
+        try:
+            with open(util.path_to_data_directory() + "{}-comments.txt".format(subreddit)) as f:
+                ngramer = Ngramer.from_text((tc.clean_text(line).text for line in f))
+        except FileNotFoundError:
+            raise ValueError('{} not loaded, try another or run subreddit_scrape'.format(subreddit))
+        else:
+            ngramer.write(ngram_path)
+            return ngramer
 
 if __name__ == "__main__":
     words = select_words()

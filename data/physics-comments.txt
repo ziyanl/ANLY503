@@ -1,4 +1,3 @@
-Version 3.6.0 of praw is outdated. Version 4.0.0 was released 1 day ago.
 Having posted a couple of days ago on the double slit experiment, which is weird, I was posted in the direction of the delayed quantum eraser experiment - which is even worse! But so interesting. 
 
 So it got me wondering what would happen if you modified the experiment a little. Background by the way is in biomedical sciences - my physics is high school level! And the video reference is https://www.youtube.com/watch?v=U7Z_TIw9InA, with the experiment described around 10 minute mark.
@@ -16440,7 +16439,8 @@ Probably not, but you may be focusing too much attention on the probabilistic as
 I enjoy poking around the Physics Dept web sites of various universities. Some of them post some really nice materials - lecture notes (some are quite detailed), practice problems with solutions, videos and PDFs of seminars, colloquia, and conferences (this is an especially favorite interest of mine), etc. 
 
 For example, for problem sets Harvard's physics dept has posted 90 weeks worth of Problem of the Week along with the solutions.  They're from around 2004, but still a nice resource.  See: https://www.physics.harvard.edu/academics/undergrad/problems
-Do you have any books left from when you were still studying? I'd say that's the best way to get specific knowledge back up.Hyperphysics would be the only comprehensive albeit very concise physics encyclopedia/website I can think of. It is by no means a website to solve problems, but I think those sites would be hard to find anyway.
+Do you have any books left from when you were still studying? I'd say that's the best way to get specific knowledge back up.
+Hyperphysics would be the only comprehensive albeit very concise physics encyclopedia/website I can think of. It is by no means a website to solve problems, but I think those sites would be hard to find anyway.
 I recommend reading the quantum mechanics theoretical minimum book by Lenny Susskind and Art Friedman. You may already know a lot in there, but it's a great motivator to get back into the swing of things. I have heard the classical mechanics one is also good, but perhaps that would be a little simple for what you're looking for...
 
 Also, starting study on a new field you haven't dipped in yet might prove fruitful! For example, if you'd like to learn GR, Sean Carroll's book Spacetime and Geometry is a great place to start. And you get to learn some dope math along the way!! 
