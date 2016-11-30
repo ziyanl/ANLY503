@@ -5,7 +5,7 @@ import tarfile
 import subprocess
 import os
 import shutil
-import utilities as util
+import Sonnit.utilities as util
 
 
 def get_words_file():

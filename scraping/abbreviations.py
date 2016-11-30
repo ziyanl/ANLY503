@@ -3,7 +3,7 @@ import bs4
 import json
 import os
 import re
-import utilities as util
+import Sonnit.utilities as util
 
 
 def get_abbreviations():

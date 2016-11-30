@@ -6,7 +6,7 @@ import scraping.words as dictionary
 import utilities as util
 
 
-class TweetCleaner:
+class TextCleaner:
     def __init__(self):
         ### Load our abbreviation dictionary
         self.abbreviations = abbrev.load_cleaned_abbreviations()
@@ -29,43 +29,43 @@ class TweetCleaner:
         # Create our tweet tokenizer so we don't have to make it over and over again
         self.tweet_tokenizer = nltk.tokenize.TweetTokenizer()
 
-    def clean_tweet(self, tweet_text):
+    def clean_text(self, text):
         """
-        Removes emojis, hashtags, handles, URLs, abbreviations, punctuation, and misspellings from a tweet's text
-        :param tweet_text: The tweet text to clean up
-        :return: A Tweet object with the original text, the cleaned text, and cleaning statistics
+        Removes emojis, hashtags, handles, URLs, abbreviations, punctuation, and misspellings from a text
+        :param text: The ftext to clean up
+        :return: A TextStatistics object with the original text, the cleaned text, and cleaning statistics
         """
-        tweet = util.TweetStatistics(tweet_text)
-        # We now clean the tweets of all of their non-word features
+        Text = util.TextStatistics(text)
+        # We now clean the texts of all of their non-word features
         # NOTE: The order of these calls is VERY important
         # Do NOT rearrange the call sequence
-        tweet_text = tweet_text.upper()
-        tweet_text, emoji_count = self._remove_emojis(tweet_text)
-        tweet_text, hashtag_count = self._remove_hashtags(tweet_text)
-        tweet_text, handle_count = self._remove_handles(tweet_text)
-        tweet_text, url_count = self._remove_urls(tweet_text)
-        tweet_text, abbreviation_count = self._remove_abbreviations(tweet_text)
-        tweet_text, punctuation_count = self._remove_punctuation(tweet_text)
-        tweet_text, misspellings_count = self._remove_misspellings(tweet_text)
+        text = text.upper()
+        text, emoji_count = self._remove_emojis(text)
+        text, hashtag_count = self._remove_hashtags(text)
+        text, handle_count = self._remove_handles(text)
+        text, url_count = self._remove_urls(text)
+        text, abbreviation_count = self._remove_abbreviations(text)
+        text, punctuation_count = self._remove_punctuation(text)
+        text, misspellings_count = self._remove_misspellings(text)
         # Save all of these values into our Tweet data structure
-        tweet.text = tweet_text
-        tweet.emoji_count = emoji_count
-        tweet.hashtag_count = hashtag_count
-        tweet.handle_count = handle_count
-        tweet.url_count = url_count
-        tweet.abbreviation_count = abbreviation_count
-        tweet.punctuation_count = punctuation_count
-        tweet.misspellings_count = misspellings_count
-        return tweet
+        Text.text = text
+        Text.emoji_count = emoji_count
+        Text.hashtag_count = hashtag_count
+        Text.handle_count = handle_count
+        Text.url_count = url_count
+        Text.abbreviation_count = abbreviation_count
+        Text.punctuation_count = punctuation_count
+        Text.misspellings_count = misspellings_count
+        return Text
 
-    def _remove_emojis(self, tweet):
-        """Removes all of the emoji characters and returns the cleaned up tweet
+    def _remove_emojis(self, text):
+        """Removes all of the emoji characters and returns the cleaned up text
         and the count of the number of emojis removed
 
         Help taken from: http://stackoverflow.com/questions/33404752/removing-emojis-from-a-string-in-python
 
-        :param tweet: The tweet text to clean
-        :return: Cleaned tweet text and count of emojis removed
+        :param text: The text to clean
+        :return: Cleaned text and count of emojis removed
         """
         emoji_pattern = re.compile("["
                                    u"\U0001F600-\U0001F64F"  # emoticons
@@ -74,23 +74,23 @@ class TweetCleaner:
                                    u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
                                    "]+", flags=re.UNICODE)
         # First we count how many emojis are present in the text
-        emoji_count = len(emoji_pattern.findall(tweet))
+        emoji_count = len(emoji_pattern.findall(text))
         # Now we swap out all of the emojis
-        cleaned_tweet = emoji_pattern.sub(r'', tweet)
-        return cleaned_tweet, emoji_count
+        cleaned_text = emoji_pattern.sub(r'', text)
+        return cleaned_text, emoji_count
 
-    def _remove_hashtags(self, tweet):
+    def _remove_hashtags(self, text):
         """
-        Iterates through the tweet text parts and attempts to resolve hashtags into actual words.
+        Iterates through the text parts and attempts to resolve hashtags into actual words.
         If the hashtag cannot be resolved into words then it is removed from the text
-        :param tweet: The tweet text to remove hashtags from
+        :param text: The text to remove hashtags from
         :return: The hashtag free text as well as the number of hashtags removed
         """
         hashtag_pattern = re.compile("[#]\w+", flags=re.UNICODE)
-        tweet_parts = self.tweet_tokenizer.tokenize(tweet)
-        filtered_tweet_parts = []
+        text_parts = self.tweet_tokenizer.tokenize(text)
+        filtered_text_parts = []
         hashtag_count = 0
-        for element in tweet_parts:
+        for element in text_parts:
             if element.startswith("#"):
                 hashtag_count += 1
                 # Cut off the "#"
@@ -104,57 +104,57 @@ class TweetCleaner:
                     word1 = element[:i]
                     word2 = element[i:]
                     if word1 in self.dictionary and word2 in self.dictionary:
-                        filtered_tweet_parts.append(word1)
-                        filtered_tweet_parts.append(word2)
+                        filtered_text_parts.append(word1)
+                        filtered_text_parts.append(word2)
                         break
                         # If adding one space couldn't save us then just skip the hashtag
             else:
-                filtered_tweet_parts.append(element)
-        return " ".join(filtered_tweet_parts), hashtag_count
+                filtered_text_parts.append(element)
+        return " ".join(filtered_text_parts), hashtag_count
 
-    def _remove_punctuation(self, tweet):
+    def _remove_punctuation(self, text):
         """
-        Filters out punctuation marks from the tweet text.
+        Filters out punctuation marks from the text.
         NB: For our sake any numbers in the text are considered punctuation marks
         NB: This will remove text like "2pac" and ":-)" as one punctuation mark
-        :param tweet: The tweet text to clean
-        :return: The tweet text with punctuation removed and the number of punctuation marks removed
+        :param text: The text to clean
+        :return: The text with punctuation removed and the number of punctuation marks removed
         """
         # We have to include "_" as its own category because it is considered a word character in some versions of regex
         punctuation_pattern = re.compile("\W|_")
         number_pattern = re.compile("\d")
         punctuation_count = 0
-        tweet_parts = self.tweet_tokenizer.tokenize(tweet)
-        filtered_tweet_parts = []
-        for element in tweet_parts:
+        text_parts = self.tweet_tokenizer.tokenize(text)
+        filtered_text_parts = []
+        for element in text_parts:
             # If it's a word containing punctuation just move on
             if element in self.dictionary:
-                filtered_tweet_parts.append(element)
+                filtered_text_parts.append(element)
                 continue
             # We only keep those parts that don't contain any punctuation or numbers
             if len(punctuation_pattern.findall(element)) == 0 and len(number_pattern.findall(element)) == 0:
-                filtered_tweet_parts.append(element)
+                filtered_text_parts.append(element)
             else:
                 punctuation_count += 1
-        return " ".join(filtered_tweet_parts), punctuation_count
+        return " ".join(filtered_text_parts), punctuation_count
 
-    def _remove_handles(self, tweet):
+    def _remove_handles(self, text):
         """
-        Removes twitter "@ mentions" aka "handles" from the tweet text
-        :param tweet: The text to clean up
+        Removes twitter "@ mentions" aka "handles" from the text
+        :param text: The text to clean up
         :return: The handle scrubbed text as well as the number of handles removed
         """
         handle_pattern = re.compile("[@]\w+", flags=re.UNICODE)
-        handle_count = len(handle_pattern.findall(tweet))
+        handle_count = len(handle_pattern.findall(text))
         # Now remove them
-        cleaned_tweet = handle_pattern.sub(r'', tweet)
-        return cleaned_tweet, handle_count
+        cleaned_text = handle_pattern.sub(r'', text)
+        return cleaned_text, handle_count
 
-    def _remove_urls(self, tweet):
+    def _remove_urls(self, text):
         """Removes URLs to the best of its abilities
         Regex modified from: https://github.com/django/django/blob/1.6/django/core/validators.py#L43-50
 
-        :param tweet: The tweet text to clean
+        :param text: The text text to clean
         :return:
         """
         url_pattern = re.compile(
@@ -165,55 +165,55 @@ class TweetCleaner:
             r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  # ...or ipv6
             r'(?::\d+)?'  # optional port
             r'(?:/?|[/?]\S+)\b', re.IGNORECASE)
-        url_count = len(url_pattern.findall(tweet))
-        cleaned_tweet = url_pattern.sub(r'', tweet)
-        return cleaned_tweet, url_count
+        url_count = len(url_pattern.findall(text))
+        cleaned_text = url_pattern.sub(r'', text)
+        return cleaned_text, url_count
 
-    def _remove_abbreviations(self, tweet):
+    def _remove_abbreviations(self, text):
         """
-        Iterates through the tweet text to find abbreviations and replace them if possible
+        Iterates through the text to find abbreviations and replace them if possible
         If an abbreviation cannot be replaced then it is removed from the text
-        :param tweet: The tweet text to look through
-        :return: The abbreviation corrected tweet text as well as the number of abbreviations removed
+        :param text: The text to look through
+        :return: The abbreviation corrected text as well as the number of abbreviations removed
         """
         abbreviation_count = 0
-        tweet_parts = self.tweet_tokenizer.tokenize(tweet)
-        expanded_tweet_parts = []
+        text_parts = self.tweet_tokenizer.tokenize(text)
+        expanded_text_parts = []
         i = 0
         # We scan through our parts seeing if any words followed by a "." are in our abbreviation dictionary
-        while i < len(tweet_parts):
+        while i < len(text_parts):
             try:
-                abbreviation = "".join([tweet_parts[i], tweet_parts[i + 1]])
+                abbreviation = "".join([text_parts[i], text_parts[i + 1]])
                 if abbreviation in self.abbreviations:
-                    expanded_tweet_parts.append(self.abbreviations[abbreviation])
+                    expanded_text_parts.append(self.abbreviations[abbreviation])
                     abbreviation_count += 1
                     i += 2
                 else:
-                    expanded_tweet_parts.append(tweet_parts[i])
+                    expanded_text_parts.append(text_parts[i])
                     i += 1
             except IndexError:
                 # If we have triggered the IndexError then we are at the end of the sentence
-                expanded_tweet_parts.append(tweet_parts[i])
+                expanded_text_parts.append(text_parts[i])
                 i += 1
-        return " ".join(expanded_tweet_parts), abbreviation_count
+        return " ".join(expanded_text_parts), abbreviation_count
 
-    def _remove_misspellings(self, tweet):
+    def _remove_misspellings(self, text):
         """
-        Iterates through all of the words in the tweet and corrects misspellings to the best of its ability
-        :param tweet: The text to spell check
-        :return: The spelling corrected tweet text and the number of misspellings
+        Iterates through all of the words in the text and corrects misspellings to the best of its ability
+        :param text: The text to spell check
+        :return: The spelling corrected text and the number of misspellings
         """
         misspellings_count = 0
-        tweet_parts = self.tweet_tokenizer.tokenize(tweet)
-        corrected_tweet_parts = []
-        for word in tweet_parts:
+        text_parts = self.tweet_tokenizer.tokenize(text)
+        corrected_text_parts = []
+        for word in text_parts:
             corrected_word = self.correct_spelling(word)
             if corrected_word != word:
-                corrected_tweet_parts.append(corrected_word)
+                corrected_text_parts.append(corrected_word)
                 misspellings_count += 1
             else:
-                corrected_tweet_parts.append(word)
-        return " ".join(corrected_tweet_parts), misspellings_count
+                corrected_text_parts.append(word)
+        return " ".join(corrected_text_parts), misspellings_count
 
     def correct_spelling(self, word):
         """

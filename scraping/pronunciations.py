@@ -3,7 +3,7 @@ import subprocess
 import os
 import stat
 import json
-import utilities as util
+import Sonnit.utilities as util
 
 
 def get_cmudict():
