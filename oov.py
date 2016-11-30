@@ -138,12 +138,10 @@ def end_pron(prons):
 
 
 
-def numberpron(numeric):
-    # TODO: stress??
-    # TODO: better support for hundreds thousands etc.
+def numberpron(numeric, CMUDICT):
 
     dig_map = {'1': 'ONE', '2': 'TWO', '3':'THREE', '4': 'FOUR', '5':'FIVE', '6':'SIX', '7':'SEVEN', '8': 'EIGHT',
-           '9': 'NINE', '0': 'ZERO'} # TODO: 'zero' vs. 'oh'
+           '9': 'NINE', '0': 'ZERO'}
     tens_map = {'2': 'TWENTY', '3':'THIRTY', '4': 'FORTY', '5':'FIFTY', '6':'SIXTY', '7':'SEVENTY', '8': 'EIGHTY',
            '9': 'NINETY', '0': 'OH'}
     teens_map = {'10': 'TEN', '11': 'ELEVEN', '12': 'TWELVE', '13':'THIRTEEN', '14': 'FOURTEEN', '15':'FIFTEEN',
@@ -161,10 +159,10 @@ def numberpron(numeric):
             return CMUDICT[tens_map[numeric[0]]][0] + CMUDICT[dig_map[numeric[1]]][0]
 
     if len(numeric) == 3:
-        return numberpron(numeric[0]) + numberpron(numeric[1:3])
+        return numberpron(numeric[0], CMUDICT) + numberpron(numeric[1:3], CMUDICT)
 
     if len(numeric) == 4:
-        return numberpron(numeric[0:2]) + numberpron(numeric[2:4])
+        return numberpron(numeric[0:2], CMUDICT) + numberpron(numeric[2:4], CMUDICT)
 
     pron = []
     for digit in numeric:
@@ -195,9 +193,13 @@ def guess_pron(word, CMUDICT={}):
     if CMUDICT == {}:
         CMUDICT = load_dict()
 
+    # first check if word is in CMUDICT, if so, just return that results
+    if word in CMUDICT:
+        return CMUDICT[word]
+
     # numbers
     if word.isnumeric():
-        return [numberpron(word)]
+        return [numberpron(word, CMUDICT)]
 
     # try singular
     if word[-1] == 'S': # TODO: deal better with more complex plurals, orthographically and phonologically, e.g. sibilants, -ies
