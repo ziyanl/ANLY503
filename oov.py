@@ -193,6 +193,10 @@ def guess_pron(word, CMUDICT={}):
     if CMUDICT == {}:
         CMUDICT = load_dict()
 
+    # first check if word is in CMUDICT, if so, just return that results
+    if word in CMUDICT:
+        return CMUDICT[word]
+
     # numbers
     if word.isnumeric():
         return [numberpron(word, CMUDICT)]
