@@ -172,13 +172,9 @@ def numberpron(numeric, CMUDICT):
 def load_dict():
     """Load cmudict.json into the CMUDICT dict."""
     CMUDICT = {}
-    INPUT_PATH = 'cmudict.json'
+    INPUT_PATH = 'data/pronunciations.json'
     with open(INPUT_PATH) as json_file:
-        for line in json_file:
-            obj = json.loads(line)
-            word = obj["word"]
-            prons = obj["pronunciations"]
-            CMUDICT[word] = prons
+            CMUDICT = json.load(json_file)
     return CMUDICT
 
 
@@ -201,8 +197,7 @@ def guess_pron(word, CMUDICT={}):
         return numberpron(word, CMUDICT)
 
     # try singular
-    if word[
-        -1] == 'S':  # TODO: deal better with more complex plurals, orthographically and phonologically, e.g. sibilants, -ies
+    if word[-1] == 'S':  # TODO: deal better with more complex plurals, orthographically and phonologically, e.g. sibilants, -ies
         sg = word[:-1]
         if sg in CMUDICT:
             sgpron = CMUDICT[sg]
@@ -237,16 +232,16 @@ def guess_pron(word, CMUDICT={}):
 
     match_prons = []
     for match in matches:
-        match_prons += CMUDICT[match]
+        match_prons.append(CMUDICT[match])
 
     end = end_pron(match_prons)
-    # print(word, matches, end)
+    #print(word, matches, end)
 
     # use perceptron (pre-learned weights/biases and scoring method) to guess stress pattern
     p = stress_perceptron.Perceptron(weights='weights_4.pk', biases='biases_4.pk')
     features = stress_perceptron.extract_feats(word)
     stress = p.predict(features)
-    # print(word, end, stress)
+    #print(word, end, stress)
 
     # ???? hacky way to deal with words with more than 5 syllables; should just eliminate them from being used in a sonnet
     if stress == 'too_long':
@@ -277,7 +272,7 @@ if __name__ == "__main__":
     CMUDICT = load_dict()
     OOV = defaultdict(int)
 
-    with open("subreddit-starwars-comments.txt") as infile:
+    with open("philosophy-comments.txt") as infile:
         filestring = infile.read()
         tokens = nltk.word_tokenize(filestring)
 
