@@ -101,7 +101,7 @@ def compute_cleanliness_values():
     # Next let's see how many duplicates we have
     duplicates = start_len - len(set(starting_dictionary))
     # We compute the percentage of duplicates
-    duplicates_percentage = duplicates/start_len * 100
+    duplicates_percentage = duplicates / start_len * 100
     # Now we count how many values are phrases
     phrases = 0
     for word in starting_dictionary:
@@ -109,13 +109,13 @@ def compute_cleanliness_values():
         if len(word.split()) != 1:
             phrases += 1
     # We compute percentage of phrases
-    phrases_percentage = phrases/start_len * 100
+    phrases_percentage = phrases / start_len * 100
     # We clean the dictionary
     # We see how many entries are in the cleaned data
     clean_len = len(clean_dictionary())
     # We compute the number of overall junk values
     junk_values = start_len - clean_len
-    junk_values_percentage = junk_values/start_len * 100
+    junk_values_percentage = junk_values / start_len * 100
     # We display the results
     print("Duplicates found: " + str(duplicates))
     print("Percentage duplicates: " + str(duplicates_percentage)[:5] + "%")  # [:5] yields 2 decimal places

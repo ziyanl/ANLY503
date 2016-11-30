@@ -31,7 +31,8 @@ def convert_to_tsv():
         # Now we execute the conversion script
         subprocess.call(['./' + util.path_to_scraping_directory() + 'cmudict_to_tsv.sh'])
     else:
-        raise FileNotFoundError(util.path_to_data_directory() + "cmudict-07.b does not exist. Try running get_cmudict()")
+        raise FileNotFoundError(
+            util.path_to_data_directory() + "cmudict-07.b does not exist. Try running get_cmudict()")
 
 
 def tsv_to_json():

@@ -31,6 +31,7 @@ def path_to_scraping_directory():
         path = ""
     return path
 
+
 class TextStatistics:
     """Used to store a text and its cleaning information"""
 

@@ -1,8 +1,10 @@
-import requests
-import bs4
 import json
 import os
 import re
+
+import bs4
+import requests
+
 import Sonnit.utilities as util
 
 
