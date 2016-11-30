@@ -43,3 +43,52 @@ def stress_pattern(stressed, s):
             bad = True
             break
     return not bad
+
+def get_stress_pattern(p):
+    nums = []
+    for c in p:
+        if c.isdigit():
+            nums.append(1 if int(c)>0 else 0)
+    return nums
+
+if __name__ == "__main__":
+    select_words()
+    rhymeScheme = "ABABCDCDEFEFGG"
+    rhymes = dict()
+    
+    for lineno in range(len(rhymeScheme)):
+        line = ""
+        lastSyllableStressed = True
+        numSyllables = 0
+        currentRhyme = rhymeScheme[lineno]
+
+        while numSyllables < 10:
+            word = random.choice(words)
+            matching = c.execute("select * from words where word=?",
+                                 (word,)).fetchall()
+            
+            for match in matching:
+                _, rhym, syls, strs, cmmn = match
+                
+                if syls+numSyllables > 10:
+                    # This pronunciation is too long. Skip.
+                    continue
+
+                # Verify stress patterns
+                if not stress_pattern(lastSyllableStressed,strs):
+                    continue
+
+                if syls+numSyllables == 10:
+                    # We get the last word in this! Deal with rhymes
+                    try:
+                        if rhym != rhymes[currentRhyme]:
+                            continue
+                    except KeyError:
+                        rhymes[currentRhyme] = rhym
+                        
+                line += word+" "
+                lastSyllableStressed = strs[-1] == '1'
+                numSyllables += syls
+                break
+
+        print(line)
