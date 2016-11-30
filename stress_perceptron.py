@@ -15,6 +15,7 @@ import pickle
 
 CMUDICT = {}
 
+
 def load_dict():
     """Load cmudict.json into the CMUDICT dict."""
     INPUT_PATH = 'cmudict.json'
@@ -97,7 +98,7 @@ def extract_feats(word):
 
     # likely number of syllables by reducing pairs of consecutive vowels that are likely one phoneme/diphthong
     sylls = re.sub(r'AE|AI|AU|AY|EA|EE|EI|EU|EY|IE|OA|OI|OU|OY', r'D', vowel)
-    #sylls = re.sub(r' E$', r'', sylls)
+    # sylls = re.sub(r' E$', r'', sylls)
     sylls = re.sub(r' ', r'', sylls)
     ff['syll_' + str(len(sylls))] += 1
     ff['syll'] = len(sylls)
@@ -106,7 +107,7 @@ def extract_feats(word):
     ff['len_' + str(len(word))] += 1
     ff['len'] = len(word)
 
-    #print(word, ff)
+    # print(word, ff)
     return ff
 
 
@@ -117,15 +118,17 @@ def add_syll(list):
         new_list.append('1' + item)
     return new_list
 
+
 class Perceptron:
-    def __init__(self, train_docs=None, train_labels=None, MAX_ITERATIONS=100, dev_docs=None, dev_labels=None, weights=None, biases=None):
+    def __init__(self, train_docs=None, train_labels=None, MAX_ITERATIONS=100, dev_docs=None, dev_labels=None,
+                 weights=None, biases=None):
         pre_syll = ['']
         self.CLASSES = ['too_long']
-        for i in range(1,6):
+        for i in range(1, 6):
             next_syll = add_syll(pre_syll)
             pre_syll = next_syll
             self.CLASSES += next_syll
-        #print(self.CLASSES)
+        # print(self.CLASSES)
         self.MAX_ITERATIONS = MAX_ITERATIONS
         if weights is not None and biases is not None:
             with open(weights, 'rb') as wfile:
@@ -133,8 +136,8 @@ class Perceptron:
             with open(biases, 'rb') as bfile:
                 self.biases = pickle.load(bfile)
         else:
-            #self.dev_docs = dev_docs
-            #self.dev_labels = dev_labels
+            # self.dev_docs = dev_docs
+            # self.dev_labels = dev_labels
             self.weights = {l: Counter() for l in self.CLASSES}
             self.biases = {l: 0 for l in self.CLASSES}
             self.learn(train_docs, train_labels)
@@ -143,7 +146,7 @@ class Perceptron:
         """
         Returns a copy of self.weights.
         """
-        return {l: Counter(c) for l,c in self.weights.items()}
+        return {l: Counter(c) for l, c in self.weights.items()}
 
     def learn(self, train_docs, train_labels):
         """
@@ -164,7 +167,7 @@ class Perceptron:
                     self.biases[gold] += 1
                     updates += 1
             trainAcc = self.test_eval(train_docs, train_labels)
-            #devAcc = self.test_eval(dev_docs, dev_labels)
+            # devAcc = self.test_eval(dev_docs, dev_labels)
             print('iteration:', i, 'updates:', updates, 'trainAcc:', trainAcc, file=sys.stderr)
             if updates == 0:
                 break
@@ -173,7 +176,6 @@ class Perceptron:
         with open('biases_4.pk', 'wb') as bfile:
             pickle.dump(self.biases, bfile, 3)
         return
-
 
     def score(self, doc, label):
         """
@@ -195,51 +197,50 @@ class Perceptron:
 
         return self.CLASSES[scores.index(max(scores))]
 
-
     def test_eval(self, test_docs, test_labels):
         pred_labels = [self.predict(d) for d in test_docs]
         ev = Eval(test_labels, pred_labels)
         return ev.accuracy()
-    #
-    # def analyze_errors(self, test_docs, gold_labels):
-    #     pred_labels = [self.predict(d) for d in test_docs]
-    #
-    #     # confusion matrix
-    #     matrix = [[0 for con in range(len(self.CLASSES))] for row in range(len(self.CLASSES))]
-    #     for p, g in zip(pred_labels, gold_labels):
-    #         p_index = self.CLASSES.index(p)
-    #         g_index = self.CLASSES.index(g)
-    #         matrix[p_index][g_index] += 1
-    #     with open('confusion.tsv', 'w') as confusion_file:
-    #         first_row = ' \t' + '\t'.join(self.CLASSES) + '\n'
-    #         confusion_file.write(first_row)
-    #         for x in range(len(self.CLASSES)):
-    #             new_row = self.CLASSES[x] + '\t' + '\t'.join([str(c) for c in matrix[x]]) + '\n'
-    #             confusion_file.write(new_row)
-    #
-    #     with open('stats.txt', 'w') as stats_file:
-    #         for l in range(len(self.CLASSES)):
-    #             # highest, lowest, and bias features for each language
-    #             lang = self.CLASSES[l]
-    #             weights = self.weights[lang]
-    #             sorted_weights = weights.most_common()
-    #             highest = sorted_weights[:10]
-    #             lowest = sorted_weights[-10:]
-    #             stats_file.write(lang + '\n')
-    #             stats_file.write("highest-weighted features: " + str(highest) + '\n')
-    #             stats_file.write("lowest-weighted features: " + str(lowest) + '\n')
-    #             stats_file.write("bias: " + str(self.biases[lang]) + '\n\n')
-    #
-    #             # precision, recall, and F1 for each language
-    #             tp = matrix[l][l]
-    #             fp = sum([matrix[y][l] for y in range(len(matrix)) if y!=l])
-    #             fn = sum([matrix[l][y] for y in range(len(matrix)) if y!=l])
-    #             precision = tp / (tp + fp)
-    #             recall = tp / (tp + fn)
-    #             f1 = (2 * precision * recall) / (precision + recall)
-    #             stats_file.write("precision: " + str(precision) + '\n')
-    #             stats_file.write("recall: " + str(recall) + '\n')
-    #             stats_file.write("F1: " + str(f1) + '\n\n')
+        #
+        # def analyze_errors(self, test_docs, gold_labels):
+        #     pred_labels = [self.predict(d) for d in test_docs]
+        #
+        #     # confusion matrix
+        #     matrix = [[0 for con in range(len(self.CLASSES))] for row in range(len(self.CLASSES))]
+        #     for p, g in zip(pred_labels, gold_labels):
+        #         p_index = self.CLASSES.index(p)
+        #         g_index = self.CLASSES.index(g)
+        #         matrix[p_index][g_index] += 1
+        #     with open('confusion.tsv', 'w') as confusion_file:
+        #         first_row = ' \t' + '\t'.join(self.CLASSES) + '\n'
+        #         confusion_file.write(first_row)
+        #         for x in range(len(self.CLASSES)):
+        #             new_row = self.CLASSES[x] + '\t' + '\t'.join([str(c) for c in matrix[x]]) + '\n'
+        #             confusion_file.write(new_row)
+        #
+        #     with open('stats.txt', 'w') as stats_file:
+        #         for l in range(len(self.CLASSES)):
+        #             # highest, lowest, and bias features for each language
+        #             lang = self.CLASSES[l]
+        #             weights = self.weights[lang]
+        #             sorted_weights = weights.most_common()
+        #             highest = sorted_weights[:10]
+        #             lowest = sorted_weights[-10:]
+        #             stats_file.write(lang + '\n')
+        #             stats_file.write("highest-weighted features: " + str(highest) + '\n')
+        #             stats_file.write("lowest-weighted features: " + str(lowest) + '\n')
+        #             stats_file.write("bias: " + str(self.biases[lang]) + '\n\n')
+        #
+        #             # precision, recall, and F1 for each language
+        #             tp = matrix[l][l]
+        #             fp = sum([matrix[y][l] for y in range(len(matrix)) if y!=l])
+        #             fn = sum([matrix[l][y] for y in range(len(matrix)) if y!=l])
+        #             precision = tp / (tp + fp)
+        #             recall = tp / (tp + fn)
+        #             f1 = (2 * precision * recall) / (precision + recall)
+        #             stats_file.write("precision: " + str(precision) + '\n')
+        #             stats_file.write("recall: " + str(recall) + '\n')
+        #             stats_file.write("F1: " + str(f1) + '\n\n')
 
 
 if __name__ == "__main__":
@@ -248,7 +249,7 @@ if __name__ == "__main__":
 
     train_docs, train_labels = load_dict()
     print(len(train_docs), 'training docs with',
-        sum(len(d) for d in train_docs)/len(train_docs), 'percepts on avg', file=sys.stderr)
+          sum(len(d) for d in train_docs) / len(train_docs), 'percepts on avg', file=sys.stderr)
 
     # dev_docs,  dev_labels  = load_featurized_docs('dev')
     # print(len(dev_docs), 'dev docs with',
@@ -260,6 +261,6 @@ if __name__ == "__main__":
     #     sum(len(d) for d in test_docs)/len(test_docs), 'percepts on avg', file=sys.stderr)
 
     ptron = Perceptron(train_docs, train_labels, MAX_ITERATIONS=niters)
-    #acc = ptron.test_eval(test_docs, test_labels)
-    #print(acc, file=sys.stderr)
-    #ptron.analyze_errors(test_docs, test_labels)
+    # acc = ptron.test_eval(test_docs, test_labels)
+    # print(acc, file=sys.stderr)
+    # ptron.analyze_errors(test_docs, test_labels)

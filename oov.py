@@ -30,7 +30,8 @@ def sonorance(letter):
     if letter == 'S':
         return 0
     else:
-        return 3 # ?
+        return 3  # ?
+
 
 def ispronounceable(orth):
     '''
@@ -92,11 +93,10 @@ def end_match(word1, word2):
     i = 1
     while i <= len(word1) and i <= len(word2):
         if word1[-i:] != word2[-i:]:
-            return i-1
+            return i - 1
         else:
             i += 1
-    return i-1
-
+    return i - 1
 
 
 def end_pron(prons):
@@ -124,7 +124,7 @@ def end_pron(prons):
                 last = last[:-1]
             lasts[last].append(pron)
             lastcounts[last] += 1
-        #print(lastcounts.most_common(1))
+        # print(lastcounts.most_common(1))
         best = lastcounts.most_common(1)
         best_phon = best[0][0]
         new_prons = []
@@ -137,15 +137,13 @@ def end_pron(prons):
             return recurse
 
 
-
 def numberpron(numeric, CMUDICT):
-
-    dig_map = {'1': 'ONE', '2': 'TWO', '3':'THREE', '4': 'FOUR', '5':'FIVE', '6':'SIX', '7':'SEVEN', '8': 'EIGHT',
-           '9': 'NINE', '0': 'ZERO'}
-    tens_map = {'2': 'TWENTY', '3':'THIRTY', '4': 'FORTY', '5':'FIFTY', '6':'SIXTY', '7':'SEVENTY', '8': 'EIGHTY',
-           '9': 'NINETY', '0': 'OH'}
-    teens_map = {'10': 'TEN', '11': 'ELEVEN', '12': 'TWELVE', '13':'THIRTEEN', '14': 'FOURTEEN', '15':'FIFTEEN',
-                 '16':'SIXTEEN', '17':'SEVENTEEN', '18': 'EIGHTEEN', '19': 'NINETEEN'}
+    dig_map = {'1': 'ONE', '2': 'TWO', '3': 'THREE', '4': 'FOUR', '5': 'FIVE', '6': 'SIX', '7': 'SEVEN', '8': 'EIGHT',
+               '9': 'NINE', '0': 'ZERO'}
+    tens_map = {'2': 'TWENTY', '3': 'THIRTY', '4': 'FORTY', '5': 'FIFTY', '6': 'SIXTY', '7': 'SEVENTY', '8': 'EIGHTY',
+                '9': 'NINETY', '0': 'OH'}
+    teens_map = {'10': 'TEN', '11': 'ELEVEN', '12': 'TWELVE', '13': 'THIRTEEN', '14': 'FOURTEEN', '15': 'FIFTEEN',
+                 '16': 'SIXTEEN', '17': 'SEVENTEEN', '18': 'EIGHTEEN', '19': 'NINETEEN'}
 
     if len(numeric) == 1:
         return CMUDICT[dig_map[numeric]][0]
@@ -169,6 +167,7 @@ def numberpron(numeric, CMUDICT):
         dig_pron = CMUDICT[dig_map[digit]][0]
         pron += dig_pron
     return pron
+
 
 def load_dict():
     """Load cmudict.json into the CMUDICT dict."""
@@ -202,7 +201,8 @@ def guess_pron(word, CMUDICT={}):
         return [numberpron(word, CMUDICT)]
 
     # try singular
-    if word[-1] == 'S': # TODO: deal better with more complex plurals, orthographically and phonologically, e.g. sibilants, -ies
+    if word[
+        -1] == 'S':  # TODO: deal better with more complex plurals, orthographically and phonologically, e.g. sibilants, -ies
         sg = word[:-1]
         if sg in CMUDICT:
             sgprons = CMUDICT[sg]
@@ -242,13 +242,13 @@ def guess_pron(word, CMUDICT={}):
         match_prons += CMUDICT[match]
 
     end = end_pron(match_prons)
-    #print(word, matches, end)
+    # print(word, matches, end)
 
     # use perceptron (pre-learned weights/biases and scoring method) to guess stress pattern
     p = stress_perceptron.Perceptron(weights='weights_4.pk', biases='biases_4.pk')
     features = stress_perceptron.extract_feats(word)
     stress = p.predict(features)
-    #print(word, end, stress)
+    # print(word, end, stress)
 
     # ???? hacky way to deal with words with more than 5 syllables; should just eliminate them from being used in a sonnet
     if stress == 'too_long':
@@ -269,7 +269,7 @@ def guess_pron(word, CMUDICT={}):
 
     if len(stress) > 0:
         for num in stress[::-1]:
-            phon = 'UU' + str(num) # fake vowel
+            phon = 'UU' + str(num)  # fake vowel
             guess = [phon] + guess
 
     return [guess]
@@ -293,5 +293,4 @@ if __name__ == "__main__":
     for tok in OOV:
         if tok.isalnum():
             print(tok, str(guess_pron(tok, CMUDICT=CMUDICT)))
-            #guess_pron(tok)
-
+            # guess_pron(tok)

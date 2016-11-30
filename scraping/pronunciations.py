@@ -76,7 +76,7 @@ def clean_pronunciations():
     Ex: "REARVIEW": [["R", "IH1", "R", "V", "Y", "UW0"], ["R", "IY1", "R", "V", "Y", "UW0"]]"
         goes to
         "REARVIEW": ["R", "IH1", "R", "V", "Y", "UW0"]"
-    :return:
+    :return: A dictionary of `word`:`pronunciation` pairs
     """
     pronunciations = load_pronunciations()
     # Check to see if we have already cleaned this data before

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/python
+# !/usr/bin/python
 
 import re
 import sys
@@ -7,16 +7,19 @@ import random
 import sqlite3
 import oov
 import json
-#import pandas
+import Sonnit.scraping.pronunciations as pron
 
-global words
+# import pandas
+
 repeat = re.compile("[A-Z']*\\([0-9]+\\)")
 whitespace = re.compile("\\s+")
+
 
 # function for removing whitespace in lines
 def split_line(line):
     syllables = filter(None, whitespace.split(line))
     return ' '.join(syllables)
+
 
 def load_dict():
     """Load cmudict.json into the CMUDICT dict."""
@@ -30,39 +33,24 @@ def load_dict():
             CMUDICT[word] = prons
     return CMUDICT
 
-def select_words():
-    global words
-    words = []
-    CMUDICT = load_dict()
-    
-    with open('cmudict_0.7b.txt','r') as file:
-        for line in file:
-            line = split_line(line)
-            # skip comments and line not beginning with letter
-            if not line[0].isalpha():
-                continue
 
-            syllables = line.split(' ', 1)
-            word = syllables[0]
-            
-            oov.guess_pron(word, CMUDICT=CMUDICT)
-            
-            if repeat.match(word):
-                continue
-            # add word to words[] if not there
-            words.append(word)
+def select_words():
+    CMUDICT = pron.clean_pronunciations()
+    return [word for word in CMUDICT]
+
 
 # function for stress pattern verification
 def stress_pattern(stressed, s):
     nums = [1 if stressed else 0]
     for count in s:
-        nums.append(int(count))        
+        nums.append(int(count))
     bad = False
     for i in range(len(nums) - 1):
         if nums[i] == nums[i + 1]:
             bad = True
             break
     return not bad
+
 
 def get_stress_pattern(pattern):
     nums = []
@@ -71,21 +59,22 @@ def get_stress_pattern(pattern):
             nums.append(1 if int(count) > 0 else 0)
     return nums
 
-def create_db():    
+
+def create_db():
     # create starwars-comments database
     connection = sqlite3.connect('starwars-comments.db')
     cur = connection.cursor()
 
     # create table
-    cur.execute('''CREATE TABLE starwars-comments (text)''')
-    
+    cur.execute('''CREATE TABLE starwars-comments (TEXT)''')
+
     # read starwars-comments text file
     file = open("starwars-comments.txt", "r")
     starwars = file.read()
 
     # write text data into database
     for row in starwars:
-        cur.execute('INSERT INTO starwars-comments VALUES(text)', row)
+        cur.execute('INSERT INTO starwars-comments VALUES(TEXT)', row)
 
     # save changes
     connection.commit()
@@ -93,18 +82,22 @@ def create_db():
     # close tect file    
     file.close()
     # close connection
-    #conn.close()
+    # conn.close()
+
 
 if __name__ == "__main__":
-    select_words()
-    
-    
+    words = select_words()
+
+    # TODO: We need the text cleaner to scrub the reddit data first
+
+    create_db()
+
     connection = sqlite3.connect('starwars-comments.db')
-    cur = connection.cursor()    
-    
+    cur = connection.cursor()
+
     rhymeScheme = "ABABCDCDEFEFGG"
     rhymes = dict()
-    
+
     for linenum in range(len(rhymeScheme)):
         line = ""
         lastSyllableStressed = True
@@ -115,15 +108,15 @@ if __name__ == "__main__":
             # choose random words to begin
             word = random.choice(words)
             # find all matching words
-            matching = cur.execute("select * from words where word = ?", (word,)).fetchall()
-            
+            matching = cur.execute("SELECT * FROM words WHERE word = ?", (word,)).fetchall()
+
             # add syllables to lines
             # stressed = 1, unstressed = 0
             for match in matching:
                 _, rhym, syls, strs, cmmn = match
-                
+
                 # skip if already has more than 10 syllables
-                if syls+numSyllables > 10:                   
+                if syls + numSyllables > 10:
                     continue
 
                 # verify stress patterns
@@ -131,18 +124,18 @@ if __name__ == "__main__":
                     continue
 
                 # fit rhymes of the last word
-                if syls+numSyllables == 10:
-                    
+                if syls + numSyllables == 10:
+
                     try:
                         if rhym != rhymes[currentRhyme]:
                             continue
                     except KeyError:
                         rhymes[currentRhyme] = rhym
-                        
-                line += word+" "
+
+                line += word + " "
                 lastSyllableStressed = strs[-1] == '1'
                 numSyllables += syls
                 break
-       
+
         # print line              
         print(line)
