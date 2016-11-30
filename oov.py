@@ -146,7 +146,10 @@ def numberpron(numeric, CMUDICT):
                  '16': 'SIXTEEN', '17': 'SEVENTEEN', '18': 'EIGHTEEN', '19': 'NINETEEN'}
 
     if len(numeric) == 1:
-        return CMUDICT[dig_map[numeric]]
+        try:
+            return CMUDICT[dig_map[numeric]]
+        except:
+            return []
 
     if len(numeric) == 2:
         if numeric[0] == '1':
@@ -230,6 +233,10 @@ def guess_pron(word, CMUDICT={}):
         elif match_len == max_match:
             matches.append(key)
 
+    # for things with weird characters; hacky way to return something ineligible for sonnet use
+    if max_match == 0:
+        return ['UU1', 'UU1']
+
     match_prons = []
     for match in matches:
         match_prons.append(CMUDICT[match])
@@ -238,7 +245,7 @@ def guess_pron(word, CMUDICT={}):
     #print(word, matches, end)
 
     # use perceptron (pre-learned weights/biases and scoring method) to guess stress pattern
-    p = stress_perceptron.Perceptron(weights='weights_4.pk', biases='biases_4.pk')
+    p = stress_perceptron.Perceptron(weights='weights_5.pk', biases='biases_5.pk')
     features = stress_perceptron.extract_feats(word)
     stress = p.predict(features)
     #print(word, end, stress)
@@ -269,6 +276,7 @@ def guess_pron(word, CMUDICT={}):
 
 
 if __name__ == "__main__":
+    '''for testing'''
     CMUDICT = load_dict()
     OOV = defaultdict(int)
 
@@ -286,4 +294,3 @@ if __name__ == "__main__":
     for tok in OOV:
         if tok.isalnum():
             print(tok, str(guess_pron(tok, CMUDICT=CMUDICT)))
-            # guess_pron(tok)
