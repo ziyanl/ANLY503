@@ -4,8 +4,9 @@
 import re
 import sys
 import random
-#import sqlite3
+import sqlite3
 import oov
+import json
 
 global words
 repeat = re.compile("[A-Z']*\\([0-9]+\\)")
@@ -16,9 +17,23 @@ def split_line(line):
     syllables = filter(None, whitespace.split(line))
     return ' '.join(syllables)
 
+def load_dict():
+    """Load cmudict.json into the CMUDICT dict."""
+    CMUDICT = {}
+    INPUT_PATH = 'cmudict.json'
+    with open(INPUT_PATH) as json_file:
+        for line in json_file:
+            obj = json.loads(line)
+            word = obj["word"]
+            prons = obj["pronunciations"]
+            CMUDICT[word] = prons
+    return CMUDICT
+
 def select_words():
     global words
     words = []
+    CMUDICT = load_dict()
+    
     with open('cmudict_0.7b.txt','r') as file:
         for line in file:
             line = split_line(line)
@@ -28,6 +43,9 @@ def select_words():
 
             syllables = line.split(' ', 1)
             word = syllables[0]
+            
+            oov.guess_pron(word, CMUDICT=CMUDICT)
+            
             if repeat.match(word):
                 continue
             # add word to words[] if not there
@@ -49,11 +67,16 @@ def get_stress_pattern(pattern):
     nums = []
     for count in pattern:
         if count.isdigit():
-            nums.append(1 if int(c)>0 else 0)
+            nums.append(1 if int(count) > 0 else 0)
     return nums
 
 if __name__ == "__main__":
     select_words()
+    
+    
+    connection = sqlite3.connect('starwars-comments.txt')
+    crsr = connection.cursor()    
+    
     rhymeScheme = "ABABCDCDEFEFGG"
     rhymes = dict()
     
@@ -64,11 +87,13 @@ if __name__ == "__main__":
         currentRhyme = rhymeScheme[lineno]
 
         while numSyllables < 10:
+            # choose random words to begin
             word = random.choice(words)
-            matching = c.execute("select * from words where word=?",
+            matching = crsr.execute("select * from words where word=?",
                                  (word,)).fetchall()
             
             # add syllables to lines
+            # stressed = 1, unstressed = 0
             for match in matching:
                 _, rhym, syls, strs, cmmn = match
                 
