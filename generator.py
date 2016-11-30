@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # !/usr/bin/python
 
+import os
 import re
 import sys
 import random
@@ -88,22 +89,27 @@ def create_db():
     # conn.close()
 
 def load_ngrams(subreddit):
-    import os
+    """
+    Loads and returns an Ngramer instance for the given subreddit.
+    Will cache results to disk for faster loading on subsequent requests.
+    """
     ngram_path = util.path_to_data_directory() + "{}.ngram".format(subreddit)
     if os.path.exists(ngram_path):
+        # Load the cached ngram model
         with open(ngram_path, 'r') as f:
             return Ngramer.read(f)
     else:
+        # Generate the ngram model from the raw text document
         tc = TextCleaner()
         try:
             with open(util.path_to_data_directory() + "{}-comments.txt".format(subreddit)) as f:
                 ngramer = Ngramer.from_text((tc.clean_text(line).text for line in f))
         except FileNotFoundError:
             raise ValueError('{} not loaded, try another or run subreddit_scrape'.format(subreddit))
-        else:
-            with open(ngram_path, 'w') as f:
-                ngramer.write(f)
-            return ngramer
+        # Cache the ngram model to disc for next time
+        with open(ngram_path, 'w') as f:
+            ngramer.write(f)
+        return ngramer
 
 if __name__ == "__main__":
     words = select_words()
