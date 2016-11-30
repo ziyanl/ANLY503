@@ -1,4 +1,3 @@
-Version 3.6.0 of praw is outdated. Version 4.0.0 was released 19 hours ago.
 We need Unity! 
 I'm sure people are going to go crazy, and start squanching everywhere!
 

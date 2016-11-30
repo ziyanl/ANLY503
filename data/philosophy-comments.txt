@@ -1,4 +1,3 @@
-Version 3.6.0 of praw is outdated. Version 4.0.0 was released 19 hours ago.
 [deleted]
 What about Slavoj Zizek???
 
@@ -13116,8 +13115,10 @@ Wait, there actually had to be a post made on Reddit to explain what people with
 
 Nice
 [removed]
-"La filosofia è scritta in questo grandissimo libro che continuamente ci sta aperto innanzi a gli occhi (io dico l'universo), ma non si può intendere se prima non s'impara a intender la lingua, e conoscer i caratteri, ne' quali è scritto. 
-Egli è scritto in lingua matematica, e i caratteri son triangoli, cerchi, ed altre figure geometriche, senza i quali mezi è impossibile a intenderne umanamente parola"
+"La filosofia è scritta in questo grandissimo libro che continuamente ci sta aperto innanzi a gli occhi (io dico l'universo), ma non si può intendere se prima non s'impara a 
+intender la lingua, e conoscer i caratteri, ne' quali è scritto. 
+Egli è scritto in lingua matematica, e i caratteri son triangoli, cerchi, ed altre figure geometriche, senza i quali mezi è impossibile 
+a intenderne umanamente parola"
 
 Galileo Galilei - Il Saggiatore
 

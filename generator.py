@@ -8,6 +8,7 @@ import sqlite3
 import oov
 import json
 import scraping.pronunciations as pron
+import utilities as util
 
 # import pandas
 
@@ -69,7 +70,7 @@ def create_db():
     cur.execute('''CREATE TABLE starwars-comments (TEXT)''')
 
     # read starwars-comments text file
-    file = open("starwars-comments.txt", "r")
+    file = open(utils.path_to_data_directory() + "starwars-comments.txt", "r")
     starwars = file.read()
 
     # write text data into database

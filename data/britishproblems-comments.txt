@@ -1,4 +1,3 @@
-Version 3.6.0 of praw is outdated. Version 4.0.0 was released 1 day ago.
 People complain when posts are made about tea or the mysterious yellow orb in the sky, and they also complain when a slightly more serious post is made.
 
 I don't mind seeing posts about politics on here. It is not quite the same as the other subs as the conversation here is usually much more casual. The tongue in cheek comments we make here would be frowned upon in more serious subs.

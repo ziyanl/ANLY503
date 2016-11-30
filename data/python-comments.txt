@@ -1,4 +1,3 @@
-Version 3.6.0 of praw is outdated. Version 4.0.0 was released 1 day ago.
 Hiring x3 Python Software Developers + (Visa Sponsorship) at Scurri
 
 https://www.djangojobs.net/jobs/632/x3-python-software-developers-visa-sponsorship-scurri/
