@@ -91,3 +91,8 @@ ENV/
 
 # MacOS Files
 .DS_Store
+
+# PyCharm Files
+.idea/
+Icon?
+
