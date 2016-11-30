@@ -7,7 +7,7 @@ import random
 import sqlite3
 import oov
 import json
-import Sonnit.scraping.pronunciations as pron
+import scraping.pronunciations as pron
 
 # import pandas
 

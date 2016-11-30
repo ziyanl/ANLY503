@@ -3,7 +3,7 @@ import subprocess
 import os
 import stat
 import json
-import Sonnit.utilities as util
+import utilities as util
 
 
 def get_cmudict():
@@ -86,7 +86,7 @@ def clean_pronunciations():
     for pronunciation in pronunciations:
         if len(pronunciations[pronunciation]) > 5:
             return pronunciations
-    for pronunciation in pronunciations:
+    for pronunciation in list(pronunciations):
         # Get the stress pattern for each pronunciation
         stress_patterns = set()
         for p in pronunciations[pronunciation]:

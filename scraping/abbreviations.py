@@ -5,7 +5,7 @@ import re
 import bs4
 import requests
 
-import Sonnit.utilities as util
+import utilities as util
 
 
 def get_abbreviations():
