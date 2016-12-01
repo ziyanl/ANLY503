@@ -8,6 +8,7 @@ import random
 import sqlite3
 import oov
 import json
+from collections import defaultdict
 import scraping.pronunciations as pron
 import utilities as util
 from ngramer import Ngramer
@@ -28,32 +29,10 @@ def split_line(line):
 def load_dict():
     """Load cmudict.json into the CMUDICT dict."""
     CMUDICT = {}
-    INPUT_PATH = 'cmudict.json'
+    INPUT_PATH = 'data/pronunciations.json'
     with open(INPUT_PATH) as json_file:
-        for line in json_file:
-            obj = json.loads(line)
-            word = obj["word"]
-            prons = obj["pronunciations"]
-            CMUDICT[word] = prons
+            CMUDICT = json.load(json_file)
     return CMUDICT
-
-
-def select_words():
-    CMUDICT = pron.clean_pronunciations()
-    return [word for word in CMUDICT]
-
-
-# function for stress pattern verification
-def stress_pattern(stressed, s):
-    nums = [1 if stressed else 0]
-    for count in s:
-        nums.append(int(count))
-    bad = False
-    for i in range(len(nums) - 1):
-        if nums[i] == nums[i + 1]:
-            bad = True
-            break
-    return not bad
 
 
 def get_stress_pattern(pattern):
@@ -64,46 +43,22 @@ def get_stress_pattern(pattern):
     return nums
 
 
-def create_db():
-    # create starwars-comments database
-    connection = sqlite3.connect('starwars-comments.db')
-    cur = connection.cursor()
-
-    # create table
-    cur.execute('''CREATE TABLE starwars-comments (TEXT)''')
-
-    # read starwars-comments text file
-    file = open(util.path_to_data_directory() + "starwars-comments.txt", "r")
-    starwars = file.read()
-
-    # write text data into database
-    for row in starwars:
-        cur.execute('INSERT INTO starwars-comments VALUES(TEXT)', row)
-
-    # save changes
-    connection.commit()
-
-    # close tect file    
-    file.close()
-    # close connection
-    # conn.close()
-
-def load_ngrams(subreddit, n=2):
+def load_ngrams(subreddit):
     """
     Loads and returns an Ngramer instance for the given subreddit.
     Will cache results to disk for faster loading on subsequent requests.
     """
-    ngram_path = util.path_to_data_directory() + "{}.{}gram".format(subreddit, n)
+    ngram_path = util.path_to_data_directory() + "{}.ngram".format(subreddit)
     if os.path.exists(ngram_path):
         # Load the cached ngram model
         with open(ngram_path, 'r') as f:
-            return Ngramer.read(f, n)
+            return Ngramer.read(f)
     else:
         # Generate the ngram model from the raw text document
         tc = TextCleaner()
         try:
             with open(util.path_to_data_directory() + "{}-comments.txt".format(subreddit)) as f:
-                ngramer = Ngramer.from_text((tc.clean_text(line).text for line in f), n)
+                ngramer = Ngramer.from_text((tc.clean_text(line).text for line in f))
         except FileNotFoundError:
             raise ValueError('{} not loaded, try another or run subreddit_scrape'.format(subreddit))
         # Cache the ngram model to disc for next time
@@ -111,57 +66,78 @@ def load_ngrams(subreddit, n=2):
             ngramer.write(f)
         return ngramer
 
+
+def check_line(stress_line):
+    if stress_line == '1101010101':
+        return True
+    return len(stress_line) <= 10 and re.match(r'1?(01)*$', stress_line)
+
+def get_rhyme(pron):
+    '''
+    :param pron: pronunciation of a word
+    :return: list of phonemes representing the end of the word starting with the last stressed vowel
+    '''
+    rhyme = []
+    for phon in pron[::-1]:
+        rhyme.insert(0, phon)
+        if phon[-1] == '1':
+            return rhyme
+    return rhyme
+
 if __name__ == "__main__":
-    words = select_words()
+    CMUDICT = load_dict()
 
     # TODO: We need the text cleaner to scrub the reddit data first
 
-    create_db()
+    #create_db()
+    ngramer = load_ngrams("starwars")
 
-    connection = sqlite3.connect('starwars-comments.db')
-    cur = connection.cursor()
+    #connection = sqlite3.connect('starwars-comments.db')
+    #cur = connection.cursor()
 
     rhymeScheme = "ABABCDCDEFEFGG"
-    rhymes = dict()
+    rhymes = defaultdict(list)
 
     for linenum in range(len(rhymeScheme)):
-        line = ""
+        words = ['</s>']
+        stress_line = ""
         lastSyllableStressed = True
         numSyllables = 0
         currentRhyme = rhymeScheme[linenum]
 
-        while numSyllables < 10:
+        while len(stress_line) < 10:
+
             # choose random words to begin
-            word = random.choice(words)
-            # find all matching words
-            matching = cur.execute("SELECT * FROM words WHERE word = ?", (word,)).fetchall()
+            if len(words) < 2: # picking end of line word
+                if currentRhyme in rhymes:
+                    word = None
+                    for i in range(2000):
+                        tmp_word = ngramer.sample_unigram()
+                        if get_rhyme(tmp_word) == get_rhyme(rhymes[currentRhyme][0]) and tmp_word not in rhymes[currentRhyme]:
+                            word = tmp_word
+                            break
+                    if word is None:
+                        word = random.choice(rhymes[currentRhyme])
+                else:
+                    word = ngramer.sample([...] + words[-1:])
+            else:
+                word = ngramer.sample([...] + words[-1:])
+            #print(word)
 
-            # add syllables to lines
-            # stressed = 1, unstressed = 0
-            for match in matching:
-                _, rhym, syls, strs, cmmn = match
+            pron = oov.guess_pron(word.upper(), CMUDICT=CMUDICT)
+            stress = ''
+            for phoneme in pron:
+                if phoneme[-1].isdigit():
+                    if phoneme[-1] == '0':
+                        stress += '0'
+                    else:
+                        stress += '1'
 
-                # skip if already has more than 10 syllables
-                if syls + numSyllables > 10:
-                    continue
+            if check_line(stress + stress_line):
+                stress_line = stress + stress_line
+                words.insert(0, word)
+                #print(words)
 
-                # verify stress patterns
-                if not stress_pattern(lastSyllableStressed, strs):
-                    continue
-
-                # fit rhymes of the last word
-                if syls + numSyllables == 10:
-
-                    try:
-                        if rhym != rhymes[currentRhyme]:
-                            continue
-                    except KeyError:
-                        rhymes[currentRhyme] = rhym
-
-                line += word + " "
-                lastSyllableStressed = strs[-1] == '1'
-                numSyllables += syls
-                break
-
-        # print line              
-        print(line)
+        # print line
+        rhymes[currentRhyme].append(words[-2])
+        print(' '.join(words[:-1]))
