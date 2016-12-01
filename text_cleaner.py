@@ -313,3 +313,4 @@ class TextCleaner:
         :return: The list of words 2 edits away
         """
         return (e2 for e1 in self._edits1(word) for e2 in self._edits1(e1))
+
