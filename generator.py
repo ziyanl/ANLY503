@@ -3,36 +3,13 @@
 
 import os
 import re
-import sys
 import random
-import sqlite3
 import oov
-import json
 from collections import defaultdict
-import scraping.pronunciations as pron
 import utilities as util
 from ngramer import Ngramer
 from rhymer import Rhymer
 from text_cleaner import TextCleaner
-
-# import pandas
-
-repeat = re.compile("[A-Z']*\\([0-9]+\\)")
-whitespace = re.compile("\\s+")
-
-
-# function for removing whitespace in lines
-def split_line(line):
-    syllables = filter(None, whitespace.split(line))
-    return ' '.join(syllables)
-
-
-def get_stress_pattern(pattern):
-    nums = []
-    for count in pattern:
-        if count.isdigit():
-            nums.append(1 if int(count) > 0 else 0)
-    return nums
 
 
 def load_ngrams_and_rhymes(subreddit, oovObj, n=2):
@@ -82,17 +59,6 @@ def check_line(stress_line):
     #     return True
     return len(stress_line) <= 10 and re.match(r'1?(01)*$', stress_line)
 
-def get_rhyme(pron):
-    '''
-    :param pron: pronunciation of a word
-    :return: list of phonemes representing the end of the word starting with the last stressed vowel
-    '''
-    rhyme = []
-    for phon in pron[::-1]:
-        rhyme.insert(0, phon)
-        if phon[-1] == '1':
-            return rhyme
-    return rhyme
 
 def generate_line(currentRhyme, rhymes, rhymer, ngramer, oovObj):
     words = [Ngramer.END_TOKEN]
@@ -129,9 +95,6 @@ def generate_line(currentRhyme, rhymes, rhymer, ngramer, oovObj):
 
 def generate(subreddit):
     oovObj = oov.Oov()
-
-    # TODO: We need the text cleaner to scrub the reddit data first
-
     ngramer, rhymer = load_ngrams_and_rhymes(subreddit, oovObj)
 
     rhymeSchemes = [
@@ -172,6 +135,7 @@ def generate(subreddit):
             # Trouble generating? Insert [deleted]! (haha)
             sonnet += '[deleted]\n'
     return sonnet
+
 
 if __name__ == "__main__":
     print(generate('washingtondc'))
