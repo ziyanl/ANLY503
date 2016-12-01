@@ -9,8 +9,8 @@ class Ngramer(object):
     A representation of an n-gram language model.
     """
 
-    START_TOKEN = '<s>'
-    END_TOKEN = '</s>'
+    START_TOKEN = '<S>'
+    END_TOKEN = '</S>'
 
     def __init__(self, n=DEFAULT_N):
         """
@@ -116,7 +116,7 @@ class Ngramer(object):
         result = Ngramer(n)
         for line in lines:
             if line.strip() == '': continue
-            result.update(tokenize(line.lower()))
+            result.update(tokenize(line.upper()))
         return result
 
 
