@@ -124,9 +124,9 @@ class Perceptron:
         #print(self.CLASSES)
         self.MAX_ITERATIONS = MAX_ITERATIONS
         if weights is not None and biases is not None:
-            with open(util.path_to_scraping_directory() + weights, 'rb') as wfile:
+            with open(util.path_to_data_directory() + weights, 'rb') as wfile:
                 self.weights = pickle.load(wfile)
-            with open(util.path_to_scraping_directory() + biases, 'rb') as bfile:
+            with open(util.path_to_data_directory() + biases, 'rb') as bfile:
                 self.biases = pickle.load(bfile)
         else:
             #self.dev_docs = dev_docs
@@ -164,9 +164,9 @@ class Perceptron:
             print('iteration:', i, 'updates:', updates, 'trainAcc:', trainAcc, file=sys.stderr)
             if updates == 0:
                 break
-        with open(util.path_to_scraping_directory() + 'weights_5.pk', 'wb') as wfile:
+        with open(util.path_to_data_directory() + 'weights_5.pk', 'wb') as wfile:
             pickle.dump(self.weights, wfile, 3)
-        with open(util.path_to_scraping_directory() + 'biases_5.pk', 'wb') as bfile:
+        with open(util.path_to_data_directory() + 'biases_5.pk', 'wb') as bfile:
             pickle.dump(self.biases, bfile, 3)
         return
 

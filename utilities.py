@@ -19,20 +19,6 @@ def path_to_data_directory():
     return path
 
 
-def path_to_scraping_directory():
-    """
-    Determines whether we are in the scraping directory or one layer above it
-    :return: The relative path to the scraping directory
-    """
-    # If scraping/ exists then we are outside of the folder
-    if os.path.isdir("scraping/"):
-        path = "scraping/"
-    else:
-        # Otherwise we are inside of the scraping directory
-        path = ""
-    return path
-
-
 def _text_read(f):
     return [line for line in f]
 
