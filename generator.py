@@ -3,10 +3,9 @@
 
 import os
 import re
-import random
 import oov
 from collections import defaultdict
-from ngramer import Ngramer
+from ngramer import Ngramer, Sampler
 import resources
 
 
@@ -15,16 +14,14 @@ class SonnetGenerator(object):
 
     NGRAM_N = 2
 
-
-    RHYME_SCHEMES = [
-        # source: http://www.rc.umd.edu/sites/default/RCOldSite/www/rchs/sonnet.htm
-        "ABBAABBACDECDE", # standard Petrarchan
-        "ABBAABBACDCDCD", # Petrarchan variant
-        "ABBAABBACDEDCE",  # Petrarchan variant
-        "ABBAACCACDECDE", # Wordsworth's Petrarchan variant
-        "ABABCDCDEFEFGG", # standard Shakespearean
-        "ABABBCBCCDCDEE" # Spenserian
-    ]
+    # source: http://www.rc.umd.edu/sites/default/RCOldSite/www/rchs/sonnet.htm
+    RHYME_SCHEMES = Sampler() # weighted selection of rhyme scheme
+    RHYME_SCHEMES.set("ABBAABBACDECDE", 1) # Standard Petrarchan
+    RHYME_SCHEMES.set("ABBAABBACDCDCD", 1) # Petrarchan variant
+    RHYME_SCHEMES.set("ABBAABBACDEDCE", 1) # Petrarchan variant
+    RHYME_SCHEMES.set("ABBAACCACDECDE", 1) # Wordsworth's Petrarchan variant
+    RHYME_SCHEMES.set("ABABCDCDEFEFGG", 4) # Standard Shakespearean
+    RHYME_SCHEMES.set("ABABBCBCCDCDEE", 4) # Spenserian
 
 
     def __init__(self):
@@ -79,7 +76,7 @@ class SonnetGenerator(object):
         self.ngramer = resources.ngramer(subreddit, SonnetGenerator.NGRAM_N)
         self.rhymer = resources.rhymer(subreddit)
 
-        rhymeScheme = random.choice(SonnetGenerator.RHYME_SCHEMES)
+        rhymeScheme = SonnetGenerator.RHYME_SCHEMES.sample()
         rhymes = defaultdict(list)
         sonnet = ""
 
