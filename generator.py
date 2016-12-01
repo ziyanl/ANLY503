@@ -107,5 +107,5 @@ class SonnetGenerator(object):
 
 if __name__ == "__main__":
     gen = SonnetGenerator()
-    sonnet = gen.generate('washingtondc')
+    sonnet = gen.generate('pokemon')
     print(sonnet)

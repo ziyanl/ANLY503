@@ -8,6 +8,7 @@ import nltk, json
 from collections import defaultdict, Counter
 import pickle
 import stress_perceptron
+import utilities as util
 
 class Oov(object):
     def __init__(self):
@@ -196,7 +197,7 @@ def numberpron(numeric, CMUDICT):
 def load_dict():
     """Load cmudict.json into the CMUDICT dict."""
     CMUDICT = {}
-    INPUT_PATH = 'data/pronunciations.json'
+    INPUT_PATH = util.path_to_data_directory() + "pronunciations.json"
     with open(INPUT_PATH) as json_file:
             CMUDICT = json.load(json_file)
     return CMUDICT
@@ -299,7 +300,7 @@ if __name__ == "__main__":
     CMUDICT = load_dict()
     OOV = defaultdict(int)
 
-    with open("philosophy-comments.txt") as infile:
+    with open(util.path_to_data_directory() + "pokemon-comments.txt") as infile:
         filestring = infile.read()
         tokens = nltk.word_tokenize(filestring)
 
