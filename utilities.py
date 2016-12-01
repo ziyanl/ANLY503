@@ -1,4 +1,5 @@
 import os
+import json
 
 
 def path_to_data_directory():
@@ -30,6 +31,66 @@ def path_to_scraping_directory():
         # Otherwise we are inside of the scraping directory
         path = ""
     return path
+
+
+def _text_read(f):
+    return [line for line in f]
+
+
+def _text_write(lines, f):
+    for line in lines:
+        f.write(line + '\n')
+
+
+DEFAULT_CACHE_FILE_MAPPINGS = {
+    '.txt': (_text_read, _text_write),
+    '.json': (json.load, json.dump)
+}
+
+
+def mem_cache():
+    def wrapper(fn):
+        _cache = {}
+
+        def inner_function(*args):
+            if args not in _cache:
+                # memory cache miss
+                _cache[args] = fn(*args)
+            return _cache[args]
+        return inner_function
+    return wrapper
+
+
+def fs_cache(file_name, reader=None, writer=None):
+    if reader is None:
+        for ext, handlers in DEFAULT_CACHE_FILE_MAPPINGS.items():
+            if file_name.endswith(ext):
+                reader = handlers[0]
+                break
+    if writer is None:
+        for ext, handlers in DEFAULT_CACHE_FILE_MAPPINGS.items():
+            if file_name.endswith(ext):
+                writer = handlers[1]
+                break
+
+    if reader is None or writer is None: raise ValueError('Missing reader/writer')
+
+    def wrapper(fn):
+        def inner_function(*args):
+            cache_file = path_to_data_directory() + file_name.format(*args)
+            if not os.path.exists(cache_file):
+                # file cache miss
+                result = fn(*args)
+                with open(cache_file, 'w') as f: # store as file
+                    writer(result, f)
+                return result
+            else:
+                # file cache hit
+                with open(cache_file) as f:
+                    return reader(f)
+            return _cache[args]
+        return inner_function
+    return wrapper
 
 
 class TextStatistics:
