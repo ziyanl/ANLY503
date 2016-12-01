@@ -62,7 +62,7 @@ def load_ngrams_and_rhymes(subreddit, CMUDICT, n=2):
         # Load the cached ngram model
         with open(rhymer_path, 'r') as f:
             rhymer = Rhymer.read(f, CMUDICT)
-    
+
     if ngramer is None or rhymer is None:
         # Generate the ngram model from the raw text document
         tc = TextCleaner()
@@ -79,7 +79,7 @@ def load_ngrams_and_rhymes(subreddit, CMUDICT, n=2):
                         rhymer.write(f)
         except FileNotFoundError:
             raise ValueError('{} not loaded, try another or run subreddit_scrape'.format(subreddit))
-        
+
     return ngramer, rhymer
 
 
@@ -105,7 +105,6 @@ if __name__ == "__main__":
 
     # TODO: We need the text cleaner to scrub the reddit data first
 
-    #create_db()
     ngramer, rhymer = load_ngrams_and_rhymes("starwars", CMUDICT)
 
     rhymeSchemes = [
@@ -119,6 +118,7 @@ if __name__ == "__main__":
     ]
     rhymeScheme = random.choice(rhymeSchemes)
     rhymes = defaultdict(list)
+    sonnet = ""
 
     for linenum in range(len(rhymeScheme)):
         words = [Ngramer.END_TOKEN]
@@ -153,7 +153,8 @@ if __name__ == "__main__":
                 words.insert(0, word)
                 #print(words)
 
-        # print line
+        # save line
         rhymes[currentRhyme].append(words[-2])
         words = [word.lower() for word in words]
-        print(' '.join(words[:-1]))
+        sonnet += ' '.join(words[:-1]) + '\n'
+    print(sonnet)
