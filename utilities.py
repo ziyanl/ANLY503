@@ -42,9 +42,19 @@ def _text_write(lines, f):
         f.write(line + '\n')
 
 
+def _tsv_read(f):
+    return [line.split('\t') for line in f]
+
+
+def _tsv_write(lines, f):
+    for line in lines:
+        f.write('\t'.join(line) + '\n')
+
+
 DEFAULT_CACHE_FILE_MAPPINGS = {
     '.txt': (_text_read, _text_write),
-    '.json': (json.load, json.dump)
+    '.json': (json.load, json.dump),
+    '.tsv': (_tsv_read, _tsv_write)
 }
 
 

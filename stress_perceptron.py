@@ -12,30 +12,26 @@ from collections import Counter
 import re
 import json
 import pickle
-
-CMUDICT = {}
+import resources
+import utilities as util
 
 def load_dict():
-    """Load cmudict.json into the CMUDICT dict."""
-    INPUT_PATH = 'cmudict.json'
+    """Loads words and labels from cmudict."""
     words = []
     labels = []
-    with open(INPUT_PATH) as json_file:
-        for line in json_file:
-            obj = json.loads(line)
-            word = obj["word"]
-            pron = obj["pronunciations"][0]
-            label = ''
-            for phoneme in pron:
-                if phoneme[-1].isdigit():
-                    if phoneme[-1] == '0':
-                        label += '0'
-                    else:
-                        label += '1'
-            if len(label) > 5:
-                label = 'too_long'
-            words.append(extract_feats(word))
-            labels.append(label)
+
+    for word, pron in resources.cmudict().items():
+        label = ''
+        for phoneme in pron:
+            if phoneme[-1].isdigit():
+                if phoneme[-1] == '0':
+                    label += '0'
+                else:
+                    label += '1'
+        if len(label) > 5:
+            label = 'too_long'
+        words.append(extract_feats(word))
+        labels.append(label)
     return words, labels
 
 
@@ -128,9 +124,9 @@ class Perceptron:
         #print(self.CLASSES)
         self.MAX_ITERATIONS = MAX_ITERATIONS
         if weights is not None and biases is not None:
-            with open(weights, 'rb') as wfile:
+            with open(util.path_to_scraping_directory() + weights, 'rb') as wfile:
                 self.weights = pickle.load(wfile)
-            with open(biases, 'rb') as bfile:
+            with open(util.path_to_scraping_directory() + biases, 'rb') as bfile:
                 self.biases = pickle.load(bfile)
         else:
             #self.dev_docs = dev_docs
@@ -168,9 +164,9 @@ class Perceptron:
             print('iteration:', i, 'updates:', updates, 'trainAcc:', trainAcc, file=sys.stderr)
             if updates == 0:
                 break
-        with open('weights_5.pk', 'wb') as wfile:
+        with open(util.path_to_scraping_directory() + 'weights_5.pk', 'wb') as wfile:
             pickle.dump(self.weights, wfile, 3)
-        with open('biases_5.pk', 'wb') as bfile:
+        with open(util.path_to_scraping_directory() + 'biases_5.pk', 'wb') as bfile:
             pickle.dump(self.biases, bfile, 3)
         return
 

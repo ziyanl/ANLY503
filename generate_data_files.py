@@ -2,6 +2,7 @@ import os
 import scraping.abbreviations
 import scraping.pronunciations
 import scraping.words
+import resources
 
 if __name__ == "__main__":
 
@@ -19,15 +20,9 @@ if __name__ == "__main__":
     scraping.abbreviations.clean_abbreviations()
 
     ########## GETTING PRONUNCIATIONS ##########
-    # Get the CMU pronouncing dictionary
-    scraping.pronunciations.get_cmudict()
-    # Then we do some bash processing to get it into a useful format
-    scraping.pronunciations.convert_to_tsv()
-    # We convert it into a python dictionary object and save the dictionary as a json file
-    scraping.pronunciations.tsv_to_json()
-    # We finally clean the messy pronunciations
-    scraping.pronunciations.clean_pronunciations()
-
+    # loads the fully-cleaned CMU dict (only if needed)
+    resources.cmudict()
+    
     ########## GETTING WORDS DICTIONARY ##########
     # Download the dictionary files and merging them
     scraping.words.get_words_file()

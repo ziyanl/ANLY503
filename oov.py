@@ -9,11 +9,12 @@ from collections import defaultdict, Counter
 import pickle
 import stress_perceptron
 import utilities as util
+import resources
 
 class Oov(object):
     def __init__(self):
         self.cache = {}
-        self.cmudict = load_dict()
+        self.cmudict = resources.cmudict()
 
     def guess_pron(self, word):
         word = word.upper()
@@ -194,15 +195,6 @@ def numberpron(numeric, CMUDICT):
     return pron
 
 
-def load_dict():
-    """Load cmudict.json into the CMUDICT dict."""
-    CMUDICT = {}
-    INPUT_PATH = util.path_to_data_directory() + "pronunciations.json"
-    with open(INPUT_PATH) as json_file:
-            CMUDICT = json.load(json_file)
-    return CMUDICT
-
-
 def guess_pron(word, CMUDICT):
     '''
     :param word: alphanumeric string
@@ -297,7 +289,7 @@ def guess_pron(word, CMUDICT):
 
 if __name__ == "__main__":
     '''for testing'''
-    CMUDICT = load_dict()
+    CMUDICT = resources.cmudict()
     OOV = defaultdict(int)
 
     with open(util.path_to_data_directory() + "pokemon-comments.txt") as infile:
