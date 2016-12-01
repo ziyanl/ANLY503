@@ -4,7 +4,7 @@ import nltk
 import scraping.abbreviations as abbrev
 import scraping.words as dictionary
 import utilities as util
-import oov
+import resources
 
 
 class TextCleaner:
@@ -14,7 +14,7 @@ class TextCleaner:
         ### Load our normal dictionary
         self.dictionary = dictionary.load_cleaned_dictionary()
         self.dictionary_onedel = dictionary.load_onedel()
-        self.prondictionary = oov.load_dict()
+        self.prondictionary = resources.cmudict()
         ### Load the Brown corpus for spelling correction
         # First download the corpus if we don't have it
         nltk.download('brown')
