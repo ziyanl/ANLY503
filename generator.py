@@ -93,11 +93,11 @@ if __name__ == "__main__":
 
     rhymeSchemes = [
         # source: http://www.rc.umd.edu/sites/default/RCOldSite/www/rchs/sonnet.htm
-        "ABBAABBACDECDE" # standard Petrarchan
-        "ABBAABBACDCDCD"  # Petrarchan variant
-        "ABBAABBACDEDCE"  # Petrarchan variant
-        "ABBAACCACDECDE" # Wordsworth's Petrarchan variant
-        "ABABCDCDEFEFGG" # standard Shakespearean
+        "ABBAABBACDECDE", # standard Petrarchan
+        "ABBAABBACDCDCD", # Petrarchan variant
+        "ABBAABBACDEDCE",  # Petrarchan variant
+        "ABBAACCACDECDE", # Wordsworth's Petrarchan variant
+        "ABABCDCDEFEFGG", # standard Shakespearean
         "ABABBCBCCDCDEE" # Spenserian
     ]
     rhymeScheme = random.choice(rhymeSchemes)
@@ -116,7 +116,7 @@ if __name__ == "__main__":
             if len(words) < 2: # picking end of line word
                 if currentRhyme in rhymes:
                     word = None
-                    for i in range(20000):
+                    for i in range(2000):
                         tmp_word = ngramer.sample_unigram()
                         if get_rhyme(tmp_word) == get_rhyme(rhymes[currentRhyme][0]) and tmp_word not in rhymes[currentRhyme]:
                             word = tmp_word
