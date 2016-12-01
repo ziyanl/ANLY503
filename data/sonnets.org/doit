@@ -1,0 +1,13 @@
+
+cat ../sonnets/*htm* | 
+grep '<dt>' | sed 's/<dt>//' | 
+sed -n '/^$/!{s/<[^>]*>//g;p;}' |
+grep -v '&' |
+awk '((NF>7)&&(NF<12))' | 
+sed 's/-/ /g' |
+tr 'a-z' 'A-Z' | 
+tr -cd 'A-Z \012' |
+tr -s ' ' ' ' |
+sed 's/^ */"/' | sed 's/ *$/"/' | sed 's/ /" "/g' | 
+awk '{printf("\n%s\n",$0)}' >z.lines
+
