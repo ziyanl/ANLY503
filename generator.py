@@ -43,22 +43,22 @@ def get_stress_pattern(pattern):
     return nums
 
 
-def load_ngrams(subreddit):
+def load_ngrams(subreddit, n=2):
     """
     Loads and returns an Ngramer instance for the given subreddit.
     Will cache results to disk for faster loading on subsequent requests.
     """
-    ngram_path = util.path_to_data_directory() + "{}.ngram".format(subreddit)
+    ngram_path = util.path_to_data_directory() + "{}.{}gram".format(subreddit, n)
     if os.path.exists(ngram_path):
         # Load the cached ngram model
         with open(ngram_path, 'r') as f:
-            return Ngramer.read(f)
+            return Ngramer.read(f, n)
     else:
         # Generate the ngram model from the raw text document
         tc = TextCleaner()
         try:
             with open(util.path_to_data_directory() + "{}-comments.txt".format(subreddit)) as f:
-                ngramer = Ngramer.from_text((tc.clean_text(line).text for line in f))
+                ngramer = Ngramer.from_text((tc.clean_text(line).text for line in f), n)
         except FileNotFoundError:
             raise ValueError('{} not loaded, try another or run subreddit_scrape'.format(subreddit))
         # Cache the ngram model to disc for next time
