@@ -138,4 +138,4 @@ def generate(subreddit):
 
 
 if __name__ == "__main__":
-    print(generate('washingtondc'))
+    print(generate('pokemon'))

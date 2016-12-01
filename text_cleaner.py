@@ -4,6 +4,7 @@ import nltk
 import scraping.abbreviations as abbrev
 import scraping.words as dictionary
 import utilities as util
+import oov
 
 
 class TextCleaner:
@@ -13,6 +14,7 @@ class TextCleaner:
         ### Load our normal dictionary
         self.dictionary = dictionary.load_cleaned_dictionary()
         self.dictionary_onedel = dictionary.load_onedel()
+        self.prondictionary = oov.load_dict()
         ### Load the Brown corpus for spelling correction
         # First download the corpus if we don't have it
         nltk.download('brown')
@@ -225,7 +227,7 @@ class TextCleaner:
         :param word:
         :return: The probabilistically corrected spelling of the word if the word is not in our dictionary
         """
-        if word in self.dictionary:
+        if word in self.dictionary or word in self.prondictionary:
             return word
         # Otherwise correct it probabilistically
         return self._correction(word)
