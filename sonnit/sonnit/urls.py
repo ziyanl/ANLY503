@@ -19,5 +19,9 @@ from sonnit_server import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^/?$', views.index, name='index'),
+    url(r'^$', views.index, name='index'),
+    url(r'^new/?', views.new_sonnet, name='new'),
+    url(r'^list/?(\w+)?', views.list_sonnets, name='list'),
+    url(r'^number/(\d+)', views.number, name='number'),
+    url(r'^rate/(\d+)/(\d)', views.rate, name='rate'),
 ]
