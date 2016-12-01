@@ -27,15 +27,6 @@ def split_line(line):
     return ' '.join(syllables)
 
 
-def load_dict():
-    """Load cmudict.json into the CMUDICT dict."""
-    CMUDICT = {}
-    INPUT_PATH = 'data/pronunciations.json'
-    with open(INPUT_PATH) as json_file:
-            CMUDICT = json.load(json_file)
-    return CMUDICT
-
-
 def get_stress_pattern(pattern):
     nums = []
     for count in pattern:
@@ -44,7 +35,7 @@ def get_stress_pattern(pattern):
     return nums
 
 
-def load_ngrams_and_rhymes(subreddit, CMUDICT, n=2):
+def load_ngrams_and_rhymes(subreddit, oovObj, n=2):
     """
     Loads and returns an Ngramer and Rhymer instance for the given subreddit.
     Will cache results to disk for faster loading on subsequent requests.
@@ -61,7 +52,7 @@ def load_ngrams_and_rhymes(subreddit, CMUDICT, n=2):
     if os.path.exists(rhymer_path):
         # Load the cached ngram model
         with open(rhymer_path, 'r') as f:
-            rhymer = Rhymer.read(f, CMUDICT)
+            rhymer = Rhymer.read(f, oovObj)
 
     if ngramer is None or rhymer is None:
         # Generate the ngram model from the raw text document
@@ -74,7 +65,7 @@ def load_ngrams_and_rhymes(subreddit, CMUDICT, n=2):
                     with open(ngram_path, 'w') as f:
                         ngramer.write(f)
                 if rhymer is None: # cache for future use
-                    rhymer = Rhymer.from_text(clean_lines, CMUDICT)
+                    rhymer = Rhymer.from_text(clean_lines, oovObj)
                     with open(rhymer_path, 'w') as f:
                         rhymer.write(f)
         except FileNotFoundError:
@@ -100,12 +91,45 @@ def get_rhyme(pron):
             return rhyme
     return rhyme
 
-if __name__ == "__main__":
-    CMUDICT = load_dict()
+def generate_line(currentRhyme, rhymes, rhymer, ngramer, oovObj):
+    words = [Ngramer.END_TOKEN]
+    stress_line = ""
+    attempts = 0
+
+    while len(stress_line) < 10 and attempts < 20:
+        attempts += 1
+        # choose random words to begin
+        if len(words) < 2: # picking end of line word
+            if currentRhyme in rhymes:
+                word = rhymer.sample(rhymes[currentRhyme][-1])
+            else:
+                word = ngramer.sample([...] + words[:1])
+        else:
+            word = ngramer.sample([...] + words[:1])
+
+        if word is None:
+            continue
+
+        if len(words) < 2 and rhymer.rhyme_count(word) < 4:
+            # Quick stop if we pick a first word that doesn't have very many rhymes
+            continue
+
+        stress = oovObj.stress_pattern(word)
+
+        if check_line(stress + stress_line) or (len(stress) == 1 and len(stress_line) == 9):
+            stress_line = stress + stress_line
+            words.insert(0, word)
+
+    if len(stress_line) == 10:
+        return words[:-1]
+
+
+def generate(subreddit):
+    oovObj = oov.Oov()
 
     # TODO: We need the text cleaner to scrub the reddit data first
 
-    ngramer, rhymer = load_ngrams_and_rhymes("starwars", CMUDICT)
+    ngramer, rhymer = load_ngrams_and_rhymes(subreddit, oovObj)
 
     rhymeSchemes = [
         # source: http://www.rc.umd.edu/sites/default/RCOldSite/www/rchs/sonnet.htm
@@ -121,47 +145,30 @@ if __name__ == "__main__":
     sonnet = ""
 
     for linenum in range(len(rhymeScheme)):
-        words = [Ngramer.END_TOKEN]
-        stress_line = ""
-        lastSyllableStressed = True
-        numSyllables = 0
-        currentRhyme = rhymeScheme[linenum]
+        attempts = 0
+        while attempts < 1000:
+            attempts += 1
 
-        while len(stress_line) < 10:
+            currentRhyme = rhymeScheme[linenum]
 
-            # choose random words to begin
-            if len(words) < 2: # picking end of line word
-                if currentRhyme in rhymes:
-                    word = rhymer.sample(rhymes[currentRhyme][0])
+            words = generate_line(currentRhyme, rhymes, rhymer, ngramer, oovObj)
+
+            # save line
+            if words is not None:
+                rhymes[currentRhyme].append(words[-1])
+                line = ' '.join((word.lower() for word in words))
+                cap = line[0].upper()
+                line = cap + line[1:]
+                if linenum == 13:
+                    line += '.'
                 else:
-                    word = ngramer.sample([...] + words[-1:])
-            else:
-                word = ngramer.sample([...] + words[-1:])
-            #print(word)
+                    line += ','
+                sonnet += line + '\n'
+                break
+        if attempts == 1000:
+            # Trouble generating? Insert [deleted]! (haha)
+            sonnet += '[deleted]\n'
+    return sonnet
 
-            pron = oov.guess_pron(word.upper(), CMUDICT=CMUDICT)
-            stress = ''
-            for phoneme in pron:
-                if phoneme[-1].isdigit():
-                    if phoneme[-1] == '0':
-                        stress += '0'
-                    else:
-                        stress += '1'
-
-            if check_line(stress + stress_line) or (len(stress) == 1 and len(stress_line) == 9):
-                stress_line = stress + stress_line
-                words.insert(0, word)
-                #print(words)
-
-        # save line
-        rhymes[currentRhyme].append(words[-2])
-        words = [word.lower() for word in words]
-        line = ' '.join(words[:-1])
-        cap = line[0].upper()
-        line = cap + line[1:]
-        if linenum == 13:
-            line += '.'
-        else:
-            line += ','
-        sonnet += line + '\n'
-    print(sonnet)
+if __name__ == "__main__":
+    print(generate('starwars'))

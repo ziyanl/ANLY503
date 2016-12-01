@@ -1,16 +1,15 @@
 from collections import defaultdict
 import random
 from nltk import word_tokenize
-import oov
 
 class Rhymer(object):
-    def __init__(self, CMUDICT):
+    def __init__(self, oov):
         """
         Constructs an Ngramer with the given order n.
         """
         self._rhyme_classes = defaultdict(set)
         self._cache = {}
-        self.CMUDICT = CMUDICT
+        self.oov = oov
 
     def _get_rhyme(self, pron):
         '''
@@ -26,7 +25,7 @@ class Rhymer(object):
 
     def _get_rhyme_tuple(self, token):
         if token not in self._cache:
-            self._cache[token] = tuple(self._get_rhyme(oov.guess_pron(token, CMUDICT=self.CMUDICT)))
+            self._cache[token] = tuple(self._get_rhyme(self.oov.guess_pron(token)))
         return self._cache[token]
 
     def update(self, tokens):
@@ -40,12 +39,15 @@ class Rhymer(object):
             return word
         return random.choice(tuple(words  - {word}))
 
+    def rhyme_count(self, word):
+        return len(self._rhyme_classes[self._get_rhyme_tuple(word)])
+
     def write(self, output):
         for rhyme, words in self._rhyme_classes.items():
             output.write('{}\t{}\n'.format(' '.join(rhyme), ' '.join(words)))
 
-    def read(input, CMUDICT):
-        result = Rhymer(CMUDICT)
+    def read(input, oov):
+        result = Rhymer(oov)
         for line in input:
             rhyme, words = line.split('\t')
             rhyme = tuple(rhyme.split(' '))
@@ -53,8 +55,8 @@ class Rhymer(object):
             result._rhyme_classes[rhyme] = words
         return result
 
-    def from_text(lines, CMUDICT, tokenize=word_tokenize):
-        result = Rhymer(CMUDICT)
+    def from_text(lines, oov, tokenize=word_tokenize):
+        result = Rhymer(oov)
         for line in lines:
             if line.strip() == '': continue
             result.update(tokenize(line.upper()))

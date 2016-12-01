@@ -9,6 +9,27 @@ from collections import defaultdict, Counter
 import pickle
 import stress_perceptron
 
+class Oov(object):
+    def __init__(self):
+        self.cache = {}
+        self.cmudict = load_dict()
+
+    def guess_pron(self, word):
+        word = word.upper()
+        if word not in self.cache:
+            self.cache[word] = guess_pron(word, self.cmudict)
+        return self.cache[word]
+
+    def stress_pattern(self, word):
+        pron = self.guess_pron(word)
+        stress = ''
+        for phoneme in pron:
+            if phoneme[-1].isdigit():
+                if phoneme[-1] == '0':
+                    stress += '0'
+                else:
+                    stress += '1'
+        return stress
 
 def sonorance(letter):
     vowels = ['A', 'E', 'I', 'O', 'U', 'Y']
@@ -181,15 +202,13 @@ def load_dict():
     return CMUDICT
 
 
-def guess_pron(word, CMUDICT={}):
+def guess_pron(word, CMUDICT):
     '''
     :param word: alphanumeric string
     :param CMUDICT: CMU pronouncing dictionary loaded into a dictionary
     :return: guess at the pronunciation of the word, in CMUDICT format; focuses on ending phonemes and
     syllable count/stress patterns, so phonemes near the beginning of the word may be very weird
     '''
-    if CMUDICT == {}:
-        CMUDICT = load_dict()
 
     # first check if word is in CMUDICT, if so, just return that results
     if word in CMUDICT:
@@ -218,7 +237,7 @@ def guess_pron(word, CMUDICT={}):
             try:
                 pron += CMUDICT[char]
             except:
-                pron += guess_pron(char)
+                pron += guess_pron(char, CMUDICT=CMUDICT)
         return pron
 
     # try string-matching end of word
