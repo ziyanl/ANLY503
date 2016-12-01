@@ -86,7 +86,7 @@ class Ngramer(object):
         for ngram, count in self._ngrams.items():
             output.write('{} {}\n'.format(' '.join(ngram), count))
 
-    def read(input, n=DEFAULT_N):
+    def read(input):
         """
         Reads a build ngram file from input stream; used in conjunction with write()
         
@@ -94,7 +94,7 @@ class Ngramer(object):
         with open('starwars.ngram', 'r') as f:
             n = Ngramer.read(f)
         """
-        result = Ngramer(n)
+        result = Ngramer()
         for line in input:
             line = line.split(' ')
             ngram, count = tuple(line[:-1]), int(line[-1])
@@ -103,8 +103,11 @@ class Ngramer(object):
             for i in range(result._n):
                 partial = tuple(r[:i] + [...] + r[i+1:])
                 result._samplers[partial].set(ngram[i], count)
+        for ngram in result._ngrams:
+            result._n = len(ngram)
+            break
         return result
-            
+
 
     def from_text(lines, n=DEFAULT_N, tokenize=word_tokenize):
         """

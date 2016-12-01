@@ -1,6 +1,7 @@
 from collections import defaultdict
 import random
 from nltk import word_tokenize
+import oov
 
 class Rhymer(object):
     def __init__(self, oov):
@@ -46,8 +47,8 @@ class Rhymer(object):
         for rhyme, words in self._rhyme_classes.items():
             output.write('{}\t{}\n'.format(' '.join(rhyme), ' '.join(words)))
 
-    def read(input, oov):
-        result = Rhymer(oov)
+    def read(input):
+        result = Rhymer(oov.Oov())
         for line in input:
             rhyme, words = line.split('\t')
             rhyme = tuple(rhyme.split(' '))
@@ -55,8 +56,8 @@ class Rhymer(object):
             result._rhyme_classes[rhyme] = words
         return result
 
-    def from_text(lines, oov, tokenize=word_tokenize):
-        result = Rhymer(oov)
+    def from_text(lines, tokenize=word_tokenize):
+        result = Rhymer(oov.Oov())
         for line in lines:
             if line.strip() == '': continue
             result.update(tokenize(line.upper()))
