@@ -68,8 +68,8 @@ def load_ngrams(subreddit, n=2):
 
 
 def check_line(stress_line):
-    if stress_line == '1101010101':
-        return True
+    # if stress_line == '1101010101':
+    #     return True
     return len(stress_line) <= 10 and re.match(r'1?(01)*$', stress_line)
 
 def get_rhyme(pron):
@@ -89,17 +89,22 @@ if __name__ == "__main__":
 
     # TODO: We need the text cleaner to scrub the reddit data first
 
-    #create_db()
     ngramer = load_ngrams("starwars")
 
-    #connection = sqlite3.connect('starwars-comments.db')
-    #cur = connection.cursor()
-
-    rhymeScheme = "ABABCDCDEFEFGG"
+    rhymeSchemes = [
+        # source: http://www.rc.umd.edu/sites/default/RCOldSite/www/rchs/sonnet.htm
+        "ABBAABBACDECDE" # standard Petrarchan
+        "ABBAABBACDCDCD"  # Petrarchan variant
+        "ABBAABBACDEDCE"  # Petrarchan variant
+        "ABBAACCACDECDE" # Wordsworth's Petrarchan variant
+        "ABABCDCDEFEFGG" # standard Shakespearean
+        "ABABBCBCCDCDEE" # Spenserian
+    ]
+    rhymeScheme = random.choice(rhymeSchemes)
     rhymes = defaultdict(list)
 
     for linenum in range(len(rhymeScheme)):
-        words = ['</s>']
+        words = [Ngramer.END_TOKEN]
         stress_line = ""
         lastSyllableStressed = True
         numSyllables = 0
@@ -111,12 +116,14 @@ if __name__ == "__main__":
             if len(words) < 2: # picking end of line word
                 if currentRhyme in rhymes:
                     word = None
-                    for i in range(2000):
+                    for i in range(20000):
                         tmp_word = ngramer.sample_unigram()
                         if get_rhyme(tmp_word) == get_rhyme(rhymes[currentRhyme][0]) and tmp_word not in rhymes[currentRhyme]:
                             word = tmp_word
+                            #print("B")
                             break
                     if word is None:
+                        #print("A")
                         word = random.choice(rhymes[currentRhyme])
                 else:
                     word = ngramer.sample([...] + words[-1:])
@@ -133,11 +140,12 @@ if __name__ == "__main__":
                     else:
                         stress += '1'
 
-            if check_line(stress + stress_line):
+            if check_line(stress + stress_line) or (len(stress) == 1 and len(stress_line) == 9):
                 stress_line = stress + stress_line
                 words.insert(0, word)
                 #print(words)
 
         # print line
         rhymes[currentRhyme].append(words[-2])
+        words = [word.lower() for word in words]
         print(' '.join(words[:-1]))
