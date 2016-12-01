@@ -98,7 +98,7 @@ class SonnetGenerator(object):
                     line = ' '.join((word.lower() for word in words))
                     cap = line[0].upper()
                     line = cap + line[1:]
-                    if linenum == 13:
+                    if linenum == len(rhymeScheme) - 1:
                         line += '.'
                     else:
                         line += ','
@@ -139,5 +139,5 @@ class SonnetGenerator(object):
 
 if __name__ == "__main__":
     gen = SonnetGenerator()
-    sonnet = gen.generate('environment')
+    sonnet = gen.generate('philosophy')
     print(sonnet)
