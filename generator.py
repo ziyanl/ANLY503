@@ -12,6 +12,7 @@ from collections import defaultdict
 import scraping.pronunciations as pron
 import utilities as util
 from ngramer import Ngramer
+from rhymer import Rhymer
 from text_cleaner import TextCleaner
 
 # import pandas
@@ -43,28 +44,43 @@ def get_stress_pattern(pattern):
     return nums
 
 
-def load_ngrams(subreddit, n=2):
+def load_ngrams_and_rhymes(subreddit, CMUDICT, n=2):
     """
-    Loads and returns an Ngramer instance for the given subreddit.
+    Loads and returns an Ngramer and Rhymer instance for the given subreddit.
     Will cache results to disk for faster loading on subsequent requests.
     """
+    ngramer = None
     ngram_path = util.path_to_data_directory() + "{}.{}gram".format(subreddit, n)
     if os.path.exists(ngram_path):
         # Load the cached ngram model
         with open(ngram_path, 'r') as f:
-            return Ngramer.read(f, n)
-    else:
+            ngramer = Ngramer.read(f, n)
+
+    rhymer = None
+    rhymer_path = util.path_to_data_directory() + '{}.rhymes'.format(subreddit)
+    if os.path.exists(rhymer_path):
+        # Load the cached ngram model
+        with open(rhymer_path, 'r') as f:
+            rhymer = Rhymer.read(f, CMUDICT)
+    
+    if ngramer is None or rhymer is None:
         # Generate the ngram model from the raw text document
         tc = TextCleaner()
         try:
             with open(util.path_to_data_directory() + "{}-comments.txt".format(subreddit)) as f:
-                ngramer = Ngramer.from_text((tc.clean_text(line).text for line in f), n)
+                clean_lines = [tc.clean_text(line).text for line in f]
+                if ngramer is None: # cache for future use
+                    ngramer = Ngramer.from_text(clean_lines, n)
+                    with open(ngram_path, 'w') as f:
+                        ngramer.write(f)
+                if rhymer is None: # cache for future use
+                    rhymer = Rhymer.from_text(clean_lines, CMUDICT)
+                    with open(rhymer_path, 'w') as f:
+                        rhymer.write(f)
         except FileNotFoundError:
             raise ValueError('{} not loaded, try another or run subreddit_scrape'.format(subreddit))
-        # Cache the ngram model to disc for next time
-        with open(ngram_path, 'w') as f:
-            ngramer.write(f)
-        return ngramer
+        
+    return ngramer, rhymer
 
 
 def check_line(stress_line):
@@ -89,7 +105,8 @@ if __name__ == "__main__":
 
     # TODO: We need the text cleaner to scrub the reddit data first
 
-    ngramer = load_ngrams("starwars")
+    #create_db()
+    ngramer, rhymer = load_ngrams_and_rhymes("starwars", CMUDICT)
 
     rhymeSchemes = [
         # source: http://www.rc.umd.edu/sites/default/RCOldSite/www/rchs/sonnet.htm
@@ -115,16 +132,7 @@ if __name__ == "__main__":
             # choose random words to begin
             if len(words) < 2: # picking end of line word
                 if currentRhyme in rhymes:
-                    word = None
-                    for i in range(2000):
-                        tmp_word = ngramer.sample_unigram()
-                        if get_rhyme(tmp_word) == get_rhyme(rhymes[currentRhyme][0]) and tmp_word not in rhymes[currentRhyme]:
-                            word = tmp_word
-                            #print("B")
-                            break
-                    if word is None:
-                        #print("A")
-                        word = random.choice(rhymes[currentRhyme])
+                    word = rhymer.sample(rhymes[currentRhyme][0])
                 else:
                     word = ngramer.sample([...] + words[-1:])
             else:

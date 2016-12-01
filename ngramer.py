@@ -19,7 +19,6 @@ class Ngramer(object):
         self._n = n
         self._ngrams = Counter()
         self._samplers = defaultdict(Sampler)
-        self._unigrams = Sampler()
 
     @property
     def n(self):
@@ -38,7 +37,6 @@ class Ngramer(object):
 
         # build from the tokens
         for token in tokens:
-            self._unigrams.inc(token)
             q.append(token)
             self._ngrams[tuple(q)] += 1
             r = list(q)
@@ -77,9 +75,6 @@ class Ngramer(object):
         # Sample the distribution
         return self._samplers[tuple(pattern)].sample()
 
-    def sample_unigram(self):
-        return self._unigrams.sample()
-
     def write(self, output):
         """
         Writes ngram model to output stream; used in conjunction with read()
@@ -108,8 +103,6 @@ class Ngramer(object):
             for i in range(result._n):
                 partial = tuple(r[:i] + [...] + r[i+1:])
                 result._samplers[partial].set(ngram[i], count)
-                if ngram[i] != Ngramer.START_TOKEN and ngram[i] != Ngramer.END_TOKEN:
-                    result._unigrams.inc(ngram[i])
         return result
             
 
