@@ -6,6 +6,7 @@ import subprocess
 import os
 import shutil
 import utilities as util
+from collections import defaultdict
 
 
 def get_words_file():
@@ -124,6 +125,33 @@ def compute_cleanliness_values():
     print("Total number of junk values: " + str(junk_values))
     print("Percentage junk values: " + str(junk_values_percentage)[:5] + "%")
 
+
+def load_onedel():
+    """
+    Loads the dictionary-onedel.json file and returns the resulting python dictionary
+    :return: the dictionary-onedel.json file
+    """
+    dictionary_filename = "dictionary-onedel.json"
+    with open(util.path_to_data_directory() + dictionary_filename) as dictionary_file:
+        words = json.load(dictionary_file)
+    return words
+
+def generate_onedel():
+    """
+    Generates the dictionary-onedel.json file and returns the resulting python dictionary
+    :return: the dictionary-onedel.json file
+    """
+    d = load_cleaned_dictionary()
+    result = defaultdict(list)
+    for word in d:
+        variations = set((word[:i]+word[i+1:] for i in range(1, len(word)-1)))
+        for variation in variations:
+            result[variation].append(word)
+
+    dictionary_filename = "dictionary-onedel.json"
+    with open(util.path_to_data_directory() + dictionary_filename, 'w') as dictionary_file:
+        words = json.dump(result, dictionary_file)
+    return result
 
 if __name__ == "__main__":
     get_words_file()

@@ -12,6 +12,7 @@ class TextCleaner:
         self.abbreviations = abbrev.load_cleaned_abbreviations()
         ### Load our normal dictionary
         self.dictionary = dictionary.load_cleaned_dictionary()
+        self.dictionary_onedel = dictionary.load_onedel()
         ### Load the Brown corpus for spelling correction
         # First download the corpus if we don't have it
         nltk.download('brown')
@@ -255,7 +256,16 @@ class TextCleaner:
         :param word: The word to generate candidates for
         :return: The best set of candidates
         """
-        return (self._known([word]) or self._known(self._edits1(word)) or self._known(self._edits2(word)) or [word])
+        result = self._known([word])
+        if len(result) == 0:
+            e1 = self._edits1(word)
+            result = self._known(e1)
+            if len(result) == 0:
+                result = self._known_onedel(e1)
+        if len(result) == 0:
+            result = [word]
+
+        return result
 
     def _known(self, words):
         """
@@ -264,6 +274,20 @@ class TextCleaner:
         :return: The set of words that were present in the dictionary
         """
         return set(w for w in words if w in self.dictionary)
+
+    def _known_onedel(self, words):
+        """
+        Determines the subset of the supplied list of words that are present in the onedel dictionary
+        When combined with _edits1 of a given word, it roughly finds 2-edit-distance matches. Exact _edits2
+        functionality is traded off for speed.
+        :param words: The list of words to check
+        :return: The set of words that were matched in the onedel dictionary
+        """
+        result = set()
+        for w in words:
+            if w in self.dictionary_onedel:
+                result = result | set(self.dictionary_onedel[w])
+        return result
 
     def _edits1(self, word):
         """

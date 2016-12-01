@@ -59,12 +59,15 @@ def load_ngrams_and_rhymes(subreddit, oovObj, n=2):
         tc = TextCleaner()
         try:
             with open(util.path_to_data_directory() + "{}-comments.txt".format(subreddit)) as f:
+                print('cleaning')
                 clean_lines = [tc.clean_text(line).text for line in f]
                 if ngramer is None: # cache for future use
+                    print('generating ngrams')
                     ngramer = Ngramer.from_text(clean_lines, n)
                     with open(ngram_path, 'w') as f:
                         ngramer.write(f)
                 if rhymer is None: # cache for future use
+                    print('generating rhymes')
                     rhymer = Rhymer.from_text(clean_lines, oovObj)
                     with open(rhymer_path, 'w') as f:
                         rhymer.write(f)
@@ -171,4 +174,4 @@ def generate(subreddit):
     return sonnet
 
 if __name__ == "__main__":
-    print(generate('starwars'))
+    print(generate('washingtondc'))

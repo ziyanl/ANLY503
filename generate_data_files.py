@@ -33,3 +33,5 @@ if __name__ == "__main__":
     scraping.words.get_words_file()
     # cleaning up the entries that are phrases or not words by themselves
     scraping.words.clean_dictionary()
+    # generates dict of words that have 1 deletion
+    scraping.words.generate_onedel()
