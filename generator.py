@@ -156,5 +156,12 @@ if __name__ == "__main__":
         # save line
         rhymes[currentRhyme].append(words[-2])
         words = [word.lower() for word in words]
-        sonnet += ' '.join(words[:-1]) + '\n'
+        line = ' '.join(words[:-1])
+        cap = line[0].upper()
+        line = cap + line[1:]
+        if linenum == 13:
+            line += '.'
+        else:
+            line += ','
+        sonnet += line + '\n'
     print(sonnet)
