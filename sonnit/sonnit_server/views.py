@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseBadRequest
 from sonnit_server.models import *
+from generator import SonnetGenerator
 
 
 # TODO: DELTE THIS STUFF LATER
@@ -11,8 +12,8 @@ def index(request):
 
 def new_sonnet(request):
     if request.method == "POST":
-        # TODO: Actually generate a sonnet
-        sonnet = Sonnet.objects.create(text="ASDF" + str(datetime.datetime.now()))
+        g = SonnetGenerator()
+        sonnet = Sonnet.objects.create(text=g.generate('starwars'))
     else:
         sonnet = None
     return render(request, 'sonnit_server/new_sonnet.html', {'sonnet': sonnet})
