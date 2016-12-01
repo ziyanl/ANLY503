@@ -1,0 +1,21 @@
+{% extends 'sonnit_server/base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            {% if sonnet %}
+                <h2>Your new sonnet: Sonnet Sonnit Number {{ sonnet.id }}</h2>
+                <blockquote>
+                    <p>{{ sonnet.text }}</p>
+                </blockquote>
+            {% else %}
+                <h2>Create a new sonnet</h2>
+                <form action="/new" method="POST" id="new_sonnet_form">
+                    {% csrf_token %}
+                    <input type="hidden">
+                    <button type="submit" class="btn btn-primary" form="new_sonnet_form" value="Generate">Generate</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

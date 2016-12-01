@@ -1,0 +1,35 @@
+{% extends 'sonnit_server/base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-3 text-center">
+            <a class="btn btn-primary" href="/list/newest">Newest to oldest</a>
+        </div>
+        <div class="col-lg-3 text-center">
+            <a class="btn btn-primary" href="/list/oldest">Oldest to newest</a>
+        </div>
+        <div class="col-lg-3 text-center">
+            <a class="btn btn-primary" href="/list/best">Best to worst</a>
+        </div>
+        <div class="col-lg-3 text-center">
+            <a class="btn btn-primary" href="/list/worst">Worst to best</a>
+        </div>
+    </div>
+{% for sonnet in sonnets %}
+    <div class="row">
+        <div class="col-lg-9">
+            <h2>Sonnit Sonnet Number {{ sonnet.id }}</h2>
+            <blockquote>
+                <p>{{ sonnet.text }}</p>
+            </blockquote>
+            <a href="/number/{{ sonnet.id }}">Share me</a>
+        </div>
+        <div class="col-lg-3 vcenter">
+            <h4>Rate</h4>
+            <button class="btn btn-success" onclick="upvote({{ sonnet.id }});" value="Tip-top!">Tip-top!</button>
+            <button class="btn btn-danger" onclick="downvote({{ sonnet.id }});" value="Egad!">Egad!</button>
+            <h4 id="sonnet_score_{{ sonnet.id }}">Current Score: {{ sonnet.score }}</h4>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}
