@@ -1,0 +1,28 @@
+{% load static %}
+<html>
+	<head>
+    <link rel="stylesheet" type="text/css" href="{% static "sonnit_server/bootstrap-3.3.7-dist/css/bootstrap.min.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "sonnit_server/jumbotron-narrow.css" %}" />
+    <script type="text/javascript" src="{% static "sonnit_server/bootstrap-3.3.7-dist/js/bootstrap.min.js" %}"></script>
+	</head>
+	<body>
+        <div class="container">
+            <div class="header clearfix">
+                <nav>
+                    <ul class="nav nav-pills pull-right">
+                        <li role="presentation" class="active"><a href="#">Home</a></li>
+                        <li role="presentation"><a href="#">New Sonnet</a></li>
+                        <li role="presentation"><a href="#">Old Sonnets</a></li>
+                        <li role="presentation"><a href="#">About</a></li>
+                    </ul>
+                </nav>
+                <h3 class="text-muted">Sonnit</h3>
+            </div>
+            {% block content %}
+            {% endblock %}
+            <footer class="footer">
+                <p>&copy; 2016 Sonnit</p>
+            </footer>
+        </div>
+	</body>
+</html>
